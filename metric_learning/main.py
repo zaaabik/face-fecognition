@@ -56,10 +56,10 @@ def get_data(path=r'C:\datasets\vgg2'):
     short_labels = []
     class_name = 0
     for folder in folders:
-        cur = path + "\\" + folder
+        cur = path + os.pathsep + folder
         files = os.listdir(cur)
         for file in files:
-            file = cur + "\\" + file
+            file = cur + os.pathsep + file
             img = cv2.imread(file)
             img = cv2.resize(img, (50, 50))
             short_labels.append(class_name)
