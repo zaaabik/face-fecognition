@@ -18,6 +18,7 @@ import optparse
 
 class_name_max = 10
 output_len = 128
+input_image_size = 128
 
 parser = optparse.OptionParser()
 parser.add_option('--dataset')
@@ -61,7 +62,7 @@ def get_data(path=r'C:\datasets\vgg2'):
         for file in files:
             file = cur + os.path.sep + file
             img = cv2.imread(file)
-            img = cv2.resize(img, (50, 50))
+            img = cv2.resize(img, (input_image_size, input_image_size))
             short_labels.append(class_name)
             img = np.array(img)
             img = img.astype('float32')
@@ -139,7 +140,7 @@ def mean_pred(y_true, y_pred):
 
 
 def create_resnet():
-    image_input = Input(shape=(128, 128, 3))
+    image_input = Input(shape=(input_image_size, input_image_size, 3))
     prev = Conv2D(37, (7, 7), (2, 2))(image_input)
     prev = Activation('relu')(prev)
     prev = BatchNormalization()(prev)
