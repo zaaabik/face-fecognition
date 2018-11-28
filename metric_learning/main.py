@@ -1,8 +1,10 @@
+import optparse
 import os
 import random
 
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 from tensorflow import keras
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
@@ -10,11 +12,8 @@ from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D
-from matplotlib import pyplot as plt
 
 from metric_learning.resnet34 import level0, level1, level2, level3, level4
-
-import optparse
 
 class_name_max = 10
 output_len = 128
@@ -22,7 +21,11 @@ input_image_size = 128
 
 parser = optparse.OptionParser()
 parser.add_option('--dataset')
+parser.add_option('--classes')
 (options, args) = parser.parse_args()
+
+if options.classes is not None:
+    class_name_max = options.classes
 
 
 class TripletLossLayer(Layer):
