@@ -14,8 +14,15 @@ from matplotlib import pyplot as plt
 
 from metric_learning.resnet34 import level0, level1, level2, level3, level4
 
+import optparse
+
 class_name_max = 10
 output_len = 128
+
+parser = optparse.OptionParser()
+parser.add_option('--dataset')
+(options, args) = parser.parse_args()
+
 
 class TripletLossLayer(Layer):
     def __init__(self, alpha=0.2, **kwargs):
@@ -198,7 +205,7 @@ def train_resnet():
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, 0.08])
-    f, l = get_data(r'F:\face recognition\dataset\vgg2')
+    f, l = get_data(options.dataset)
     labels_one_hot = keras.utils.to_categorical(l, class_name_max)
     dummy = np.zeros((f.shape[0], 1))
     model.fit([f, labels_one_hot], [labels_one_hot, dummy], epochs=50, verbose=2, batch_size=32)
