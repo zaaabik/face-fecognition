@@ -28,13 +28,12 @@ parser.add_option('--batch')
 parser.add_option('--epochs')
 (options, args) = parser.parse_args()
 
-if options.classes is not None:
-    class_name_max = options.classes
 
 batch_size = int(options.batch)
 lr = float(options.lr)
 center_weight = float(options.center)
 epochs = int(options.epochs)
+class_name_max = int(options.classes)
 
 class TripletLossLayer(Layer):
     def __init__(self, alpha=0.2, **kwargs):
