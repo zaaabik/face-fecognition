@@ -25,6 +25,7 @@ parser.add_option('--classes')
 parser.add_option('--lr')
 parser.add_option('--center')
 parser.add_option('--batch')
+parser.add_option('--epochs')
 (options, args) = parser.parse_args()
 
 if options.classes is not None:
@@ -33,6 +34,7 @@ if options.classes is not None:
 batch_size = int(options.batch)
 lr = float(options.lr)
 center_weight = float(options.center)
+epochs = int(options.epochs)
 
 class TripletLossLayer(Layer):
     def __init__(self, alpha=0.2, **kwargs):
@@ -132,7 +134,7 @@ def create_triplet_generator(data, labels, batch_size):
 
 def get_test_image(path):
     img = cv2.imread(path)
-    img = cv2.resize(img, (50, 50))
+    img = cv2.resize(img, (input_image_size, input_image_size))
     img = np.array(img)
     img = img.astype('float32')
     img /= 256
@@ -203,7 +205,7 @@ def train_resnet():
     f, l = get_data(options.dataset)
     labels_one_hot = keras.utils.to_categorical(l, class_name_max)
     dummy = np.zeros((f.shape[0], 1))
-    model.fit([f, labels_one_hot], [labels_one_hot, dummy], epochs=50, verbose=2, batch_size=batch_size)
+    model.fit([f, labels_one_hot], [labels_one_hot, dummy], epochs=epochs, verbose=2, batch_size=batch_size)
     model.save_weights('resnet2d.h5')
 
 
