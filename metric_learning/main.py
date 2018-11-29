@@ -22,11 +22,17 @@ input_image_size = 128
 parser = optparse.OptionParser()
 parser.add_option('--dataset')
 parser.add_option('--classes')
+parser.add_option('--lr')
+parser.add_option('--center')
+parser.add_option('--batch')
 (options, args) = parser.parse_args()
 
 if options.classes is not None:
     class_name_max = options.classes
 
+batch_size = int(options.batch)
+lr = float(options.lr)
+center_weight = float(options.center)
 
 class TripletLossLayer(Layer):
     def __init__(self, alpha=0.2, **kwargs):
@@ -134,14 +140,6 @@ def get_test_image(path):
     return img
 
 
-def distance(emb1, emb2):
-    return np.sum(np.square(emb1 - emb2))
-
-
-def mean_pred(y_true, y_pred):
-    return K.mean(y_pred)
-
-
 def create_resnet():
     image_input = Input(shape=(input_image_size, input_image_size, 3))
     prev = Conv2D(37, (7, 7), (2, 2))(image_input)
@@ -170,10 +168,6 @@ class CenterLossLayer(Layer):
                                        shape=(class_name_max, 128),
                                        initializer='uniform',
                                        trainable=False)
-        # self.counter = self.add_weight(name='counter',
-        #                                shape=(1,),
-        #                                initializer='zeros',
-        #                                trainable=False)  # just for debugging
         super().build(input_shape)
 
     def call(self, x, mask=None):
@@ -183,9 +177,6 @@ class CenterLossLayer(Layer):
         delta_centers /= center_counts
         new_centers = self.centers - self.alpha * delta_centers
         self.add_update((self.centers, new_centers), x)
-
-        # self.add_update((self.counter, self.counter + 1), x)
-
         self.result = x[0] - K.dot(x[1], self.centers)
         self.result = K.sum(self.result ** 2, axis=1, keepdims=True)  # / K.dot(x[1], center_counts)
         return self.result  # Nx1
@@ -208,11 +199,11 @@ def train_resnet():
     optim = optimizers.SGD(lr=1e-3, momentum=0.9)
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
-                  loss_weights=[1, 0.08])
+                  loss_weights=[1, center_weight])
     f, l = get_data(options.dataset)
     labels_one_hot = keras.utils.to_categorical(l, class_name_max)
     dummy = np.zeros((f.shape[0], 1))
-    model.fit([f, labels_one_hot], [labels_one_hot, dummy], epochs=50, verbose=2, batch_size=32)
+    model.fit([f, labels_one_hot], [labels_one_hot, dummy], epochs=50, verbose=2, batch_size=batch_size)
     model.save_weights('resnet2d.h5')
 
 
@@ -279,7 +270,7 @@ def print_result():
     for d, l in zip(dot, l):
         plt.scatter(d[0], d[1], c=c[l], s=10)
     plt.title('after')
-    # plt.title('before')
+    # plt.title('nanbefore')
     plt.show()
 
 
