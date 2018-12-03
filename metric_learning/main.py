@@ -259,24 +259,7 @@ def test_distance():
     print(n_dist.mean())
 
 
-def print_result():
-    d, l = get_data()
-    resnet = create_resnet()
-
-    resnet.load_weights('resnet2d.h5', by_name=True)
-    dot = resnet.predict(d)
-    c = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff',
-         '#ff00ff', '#990000', '#999900', '#009900', '#009999']
-    print(dot)
-    for d, l in zip(dot, l):
-        plt.scatter(d[0], d[1], c=c[l], s=10)
-    plt.title('after')
-    # plt.title('nanbefore')
-    plt.show()
-
-
 if __name__ == '__main__':
     train_resnet()
     # test_reznet()
     # test_distance()
-    # print_result()
