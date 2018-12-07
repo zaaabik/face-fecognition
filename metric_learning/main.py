@@ -5,6 +5,7 @@ from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
+from tensorflow.python.keras.callbacks import LearningRateScheduler
 from tensorflow.python.keras.layers import Conv2D, Dense, Activation, \
     GlobalAveragePooling2D
 
@@ -29,6 +30,15 @@ center_weight = float(options.center)
 epochs = int(options.epochs)
 class_name_max = int(options.classes)
 verbose = int(options.verbose)
+
+
+def step_decay(epoch):
+    if epoch < 60:
+        return 0.05
+    elif 60 <= epoch < 80:
+        return 0.005
+    else:
+        return 0.0005
 
 
 def create_resnet():
@@ -75,7 +85,7 @@ def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
     main = Dense(class_name_max, activation='softmax', name='main_out')(resnet.output)
-    side = CenterLossLayer(alpha=0.5, name='centerlosslayer')([resnet.output, aux_input])
+    side = CenterLossLayer(alpha=0.95, name='centerlosslayer')([resnet.output, aux_input])
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.SGD(lr=lr, momentum=0.9)
@@ -84,10 +94,15 @@ def train_resnet():
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     all_files, all_labels = get_files(options.dataset)
     dataset_len = len(all_files)
+    callbacks = []
+    if lr < 0:
+        callbacks.append(LearningRateScheduler(step_decay))
+
     model.fit_generator(Generator(all_files, all_labels, input_image_size, batch_size, class_name_max),
                         epochs=epochs,
                         steps_per_epoch=dataset_len // batch_size,
-                        verbose=verbose
+                        verbose=verbose,
+                        callbacks=callbacks
                         )
     model.save_weights('resnet2d.h5')
 
