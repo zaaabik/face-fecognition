@@ -10,7 +10,6 @@ from tensorflow.python.keras.layers import Conv2D, Dense, Activation, \
 
 from metric_learning.generator import Generator
 
-class_name_max = 10
 output_len = 128
 input_image_size = 128
 
@@ -21,6 +20,7 @@ parser.add_option('--lr')
 parser.add_option('--center')
 parser.add_option('--batch')
 parser.add_option('--epochs')
+parser.add_option('--verbose')
 (options, args) = parser.parse_args()
 
 batch_size = int(options.batch)
@@ -28,6 +28,7 @@ lr = float(options.lr)
 center_weight = float(options.center)
 epochs = int(options.epochs)
 class_name_max = int(options.classes)
+verbose = int(options.verbose)
 
 
 def create_resnet():
@@ -85,7 +86,8 @@ def train_resnet():
     dataset_len = len(all_files)
     model.fit_generator(Generator(all_files, all_labels, input_image_size, batch_size, class_name_max),
                         epochs=epochs,
-                        steps_per_epoch=dataset_len // batch_size
+                        steps_per_epoch=dataset_len // batch_size,
+                        verbose=verbose
                         )
     model.save_weights('resnet2d.h5')
 
