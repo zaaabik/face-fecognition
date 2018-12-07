@@ -1,7 +1,6 @@
 import optparse
 import os
 
-from keras.layers import BatchNormalization
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
