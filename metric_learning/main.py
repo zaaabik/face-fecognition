@@ -96,6 +96,8 @@ def get_files(path):
     all_labels = []
     folders = os.listdir(path)
     for current_label, folder in enumerate(folders):
+        if current_label >= class_name_max:
+            break
         cur = path + os.path.sep + folder
         files = os.listdir(cur)
         for idx, val in enumerate(files):
