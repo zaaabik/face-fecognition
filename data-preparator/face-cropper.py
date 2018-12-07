@@ -8,7 +8,9 @@ parser = optparse.OptionParser()
 parser.add_option("-d", "--data")
 parser.add_option("-o", "--out")
 parser.add_option("-m", "--mode")
+parser.add_option("-s", "--start_idx")
 (options, args) = parser.parse_args()
+start_idx = int(options.start_idx)
 
 
 def main():
@@ -23,6 +25,8 @@ def crop_faces_in_folder(path, out_folder):
         os.mkdir(out_folder)
     folders_count = len(folders)
     for idx, folder in enumerate(folders):
+        if idx < start_idx:
+            continue
         print(f"{idx / folders_count * 100} %", flush=True, end='\r')
         files_path = path + os.path.sep + folder
         files = os.listdir(files_path)
