@@ -12,7 +12,7 @@ parser.add_option("-s", "--start_idx")
 parser.add_option("-l", "--log")
 (options, args) = parser.parse_args()
 start_idx = int(options.start_idx)
-log = int(options.log)
+log = bool(options.log)
 
 
 def main():
