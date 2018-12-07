@@ -9,8 +9,10 @@ parser.add_option("-d", "--data")
 parser.add_option("-o", "--out")
 parser.add_option("-m", "--mode")
 parser.add_option("-s", "--start_idx")
+parser.add_option("-l", "--log")
 (options, args) = parser.parse_args()
 start_idx = int(options.start_idx)
+log = int(options.log)
 
 
 def main():
@@ -35,6 +37,10 @@ def crop_faces_in_folder(path, out_folder):
         for file in files:
             file_path = files_path + os.path.sep + file
             image = cv2.imread(file_path)
+            if log:
+                print(file_path)
+            if image is None:
+                continue
             face_detector = dlib.get_frontal_face_detector()
             faces = face_detector(image, 1)
             if len(faces) == 0:
