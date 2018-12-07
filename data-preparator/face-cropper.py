@@ -34,7 +34,7 @@ def crop_faces_in_folder(path, out_folder):
             face_detector = dlib.get_frontal_face_detector()
             faces = face_detector(image, 1)
             if len(faces) == 0:
-                return
+                continue
 
             face = faces[0]
             x = face.left()
