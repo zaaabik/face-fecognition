@@ -1,15 +1,17 @@
 import optparse
 import os
 
+from keras.layers import BatchNormalization
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler
-from tensorflow.python.keras.layers import Conv2D, Dense, Activation, \
+from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D
 
 from metric_learning.generator import Generator
+from metric_learning.resnet34 import level4, level1, level0, level3, level2
 
 output_len = 128
 input_image_size = 128
@@ -45,9 +47,17 @@ def create_resnet():
     image_input = Input(shape=(input_image_size, input_image_size, 3))
     prev = Conv2D(37, (7, 7), (2, 2))(image_input)
     prev = Activation('relu')(prev)
+    prev = BatchNormalization()(prev)
+    prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
+
+    prev = level4(prev)
+    prev = level3(prev)
+    prev = level2(prev)
+    prev = level1(prev)
+    prev = level0(prev)
     prev = GlobalAveragePooling2D()(prev)
-    prev = Dense(output_len, use_bias=False)(prev)
-    return Model(image_input, prev)
+    output = Dense(output_len, use_bias=False)(prev)
+    return Model(image_input, output)
 
 
 class CenterLossLayer(Layer):

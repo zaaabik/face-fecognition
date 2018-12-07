@@ -1,12 +1,5 @@
-from tensorflow.python.keras import Sequential, Input
-from tensorflow.python.keras.layers import Convolution2D, MaxPool2D, BatchNormalization, Conv2D, add, AvgPool2D, Activation
-
-
-def resnet34(input_shape, output):
-    model = Sequential()
-    model.add(Input(shape=input_shape))
-    model.add(Convolution2D(37, (7, 7), (2, 2), activation='relu'))
-    model.add(MaxPool2D((3, 3), (2, 3)))
+from tensorflow.python.keras.layers import BatchNormalization, Conv2D, add, AvgPool2D, \
+    Activation
 
 
 def conv_block(feat_maps_out, prev, strides):
