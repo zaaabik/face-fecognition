@@ -32,7 +32,7 @@ center_weight = float(options.center)
 epochs = int(options.epochs)
 class_name_max = int(options.classes)
 verbose = int(options.verbose)
-alpha = int(options.alpha)
+alpha = float(options.alpha)
 
 
 def step_decay(epoch):
