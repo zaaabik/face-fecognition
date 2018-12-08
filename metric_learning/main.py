@@ -23,6 +23,7 @@ parser.add_option('--center')
 parser.add_option('--batch')
 parser.add_option('--epochs')
 parser.add_option('--verbose')
+parser.add_option('--alpha')
 (options, args) = parser.parse_args()
 
 batch_size = int(options.batch)
@@ -31,6 +32,7 @@ center_weight = float(options.center)
 epochs = int(options.epochs)
 class_name_max = int(options.classes)
 verbose = int(options.verbose)
+alpha = int(options.alpha)
 
 
 def step_decay(epoch):
@@ -94,7 +96,7 @@ def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
     main = Dense(class_name_max, activation='softmax', name='main_out')(resnet.output)
-    side = CenterLossLayer(alpha=0.95, name='centerlosslayer')([resnet.output, aux_input])
+    side = CenterLossLayer(alpha=alpha, name='centerlosslayer')([resnet.output, aux_input])
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.SGD(lr=lr, momentum=0.9)

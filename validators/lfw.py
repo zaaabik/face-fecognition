@@ -90,7 +90,6 @@ def main():
 
         if positive[idx] == cur_positive:
             right_answers += 1
-        print(positive[idx] == cur_positive)
 
     print('accuracy: ', right_answers / count)
 
