@@ -122,8 +122,9 @@ def train_resnet():
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     all_files, all_labels = get_files(options.dataset)
-    # X_train, X_val, y_train, y_val = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
-    dataset_len = len(all_files)
+    p = np.random.permutation(len(all_files))
+    all_files = all_files[p]
+    all_labels = all_labels[p]
     callbacks = []
 
     if lr < 0:
@@ -136,7 +137,7 @@ def train_resnet():
 
         model.fit_generator(training_generator,
                             epochs=epochs,
-                            steps_per_epoch=dataset_len // batch_size,
+                            steps_per_epoch=len(y_train) // batch_size,
                             verbose=verbose,
                             validation_data=test_generator,
                             validation_steps=len(y_test) // batch_size,
@@ -175,7 +176,7 @@ def get_files(path):
         files_count += current_folder_files_count
         all_files.extend(files)
         current_label += 1
-    return all_files, all_labels
+    return np.array(all_files), np.array(all_labels)
 
 
 if __name__ == '__main__':
