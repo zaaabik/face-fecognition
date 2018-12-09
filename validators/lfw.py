@@ -53,7 +53,6 @@ def create_pairs(base_dir, pairs):
     if nrof_skipped_pairs > 0:
         print('Skipped %d image pairs' % nrof_skipped_pairs)
 
-
     return path_list, issame_list
 
 
@@ -72,8 +71,9 @@ def main():
     resnset = create_resnet()
     if not os.path.exists(options.weights):
         print('can not find weights')
-        exit(1)
-    resnset.load_weights(options.weights, by_name=True)
+    else:
+        print('weights are found')
+        resnset.load_weights(options.weights, by_name=True)
     thr = float(options.thr)
     count = len(pairs)
     right_answers = 0
@@ -83,6 +83,7 @@ def main():
         imgs = np.array([im0, im1])
         inferences = resnset.predict(imgs)
         dist = np.linalg.norm(inferences[0] - inferences[1])
+        print(idx, " ", dist)
         if dist > thr:
             cur_positive = False
         else:
