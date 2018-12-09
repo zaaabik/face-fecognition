@@ -22,7 +22,7 @@ class Generator(Sequence):
 
         y_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
         images = np.array([
-            resize(imread(file_name), (self.image_size, self.image_size))
+            np.array(resize(imread(file_name), (self.image_size, self.image_size))) / 255
             for file_name in batch_x])
 
         dummy = np.zeros((np.array(batch_x).shape[0], 1))

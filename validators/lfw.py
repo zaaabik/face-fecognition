@@ -78,8 +78,8 @@ def main():
     count = len(pairs)
     right_answers = 0
     for idx, pair in enumerate(pairs):
-        im0 = resize(imread(pair[0]), (128, 128))
-        im1 = resize(imread(pair[1]), (128, 128))
+        im0 = np.array(resize(imread(pair[0]), (128, 128))) / 255
+        im1 = np.array(resize(imread(pair[1]), (128, 128))) / 255
         imgs = np.array([im0, im1])
         inferences = resnset.predict(imgs)
         dist = np.linalg.norm(inferences[0] - inferences[1])
