@@ -72,8 +72,8 @@ def main():
     resnset = create_resnet()
     if not os.path.exists(options.weights):
         print('can not find weights')
-        exit(1)
-    resnset.load_weights(options.weights, by_name=True)
+    else:
+        resnset.load_weights(options.weights, by_name=True)
     thr = float(options.thr)
     count = len(pairs)
     right_answers = 0
