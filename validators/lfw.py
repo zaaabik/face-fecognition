@@ -73,6 +73,7 @@ def main():
     if not os.path.exists(options.weights):
         print('can not find weights')
     else:
+        print('weights are found')
         resnset.load_weights(options.weights, by_name=True)
     thr = float(options.thr)
     count = len(pairs)
