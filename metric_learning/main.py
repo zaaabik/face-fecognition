@@ -1,6 +1,9 @@
 import optparse
 import os
 
+import cv2
+import numpy as np
+from sklearn.model_selection import train_test_split
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
@@ -8,6 +11,7 @@ from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D
+from tensorflow.python.keras.utils import to_categorical
 
 from metric_learning.generator import Generator
 from metric_learning.resnet34 import level4, level1, level0, level3, level2
@@ -24,6 +28,7 @@ parser.add_option('--batch')
 parser.add_option('--epochs')
 parser.add_option('--verbose')
 parser.add_option('--alpha')
+parser.add_option('--generator')
 (options, args) = parser.parse_args()
 
 batch_size = int(options.batch)
@@ -33,6 +38,19 @@ epochs = int(options.epochs)
 class_name_max = int(options.classes)
 verbose = int(options.verbose)
 alpha = float(options.alpha)
+generator = bool(options.generator)
+
+
+def get_images(files):
+    images = []
+    for file in files:
+        img = cv2.imread(file)
+        img = cv2.resize(img, (input_image_size, input_image_size))
+        img = np.array(img) / 255
+        img = img.astype('float32')
+        images.append(img)
+
+    return np.array(images)
 
 
 def step_decay(epoch):
@@ -104,17 +122,36 @@ def train_resnet():
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     all_files, all_labels = get_files(options.dataset)
+    # X_train, X_val, y_train, y_val = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
     dataset_len = len(all_files)
     callbacks = []
+
     if lr < 0:
         callbacks.append(LearningRateScheduler(step_decay))
 
-    model.fit_generator(Generator(all_files, all_labels, input_image_size, batch_size, class_name_max),
-                        epochs=epochs,
-                        steps_per_epoch=dataset_len // batch_size,
-                        verbose=verbose,
-                        callbacks=callbacks
-                        )
+    if generator:
+        x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
+        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
+        test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
+
+        model.fit_generator(training_generator,
+                            epochs=epochs,
+                            steps_per_epoch=dataset_len // batch_size,
+                            verbose=verbose,
+                            validation_data=test_generator,
+                            validation_steps=len(y_test) // batch_size,
+                            callbacks=callbacks
+                            )
+    else:
+        images = get_images(all_files)
+        dummy = np.zeros((np.array(images).shape[0], 1))
+        hot_encoded_labels = to_categorical(all_labels, class_name_max)
+        model.fit([images, hot_encoded_labels],
+                  [hot_encoded_labels, dummy],
+                  epochs=epochs,
+                  validation_split=0.2,
+                  batch_size=batch_size,
+                  verbose=verbose)
     model.save_weights('resnet2d.h5')
 
 
