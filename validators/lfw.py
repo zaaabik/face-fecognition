@@ -17,7 +17,9 @@ parser.add_option('--dataset')
 parser.add_option('--pairs')
 parser.add_option('--thr')
 parser.add_option('--weights')
+parser.add_option('--find_thr')
 (options, args) = parser.parse_args()
+find_thr = bool(options.find_thr)
 
 
 def read_pairs_file(path):
@@ -77,20 +79,38 @@ def main():
     thr = float(options.thr)
     count = len(pairs)
     right_answers = 0
+    positive_dist = []
+    negative_dist = []
     for idx, pair in enumerate(pairs):
         im0 = np.array(resize(imread(pair[0]), (128, 128))) / 255
         im1 = np.array(resize(imread(pair[1]), (128, 128))) / 255
         imgs = np.array([im0, im1])
         inferences = resnset.predict(imgs)
         dist = np.linalg.norm(inferences[0] - inferences[1])
-        print(idx, " ", dist)
         if dist > thr:
             cur_positive = False
         else:
             cur_positive = True
 
+        if find_thr:
+            if positive[idx]:
+                positive_dist.append(dist)
+            else:
+                negative_dist.append(dist)
         if positive[idx] == cur_positive:
             right_answers += 1
+    if find_thr:
+        positive_dist = np.array(positive_dist)
+        negative_dist = np.array(negative_dist)
+        print("max positive: ", positive_dist.max())
+        print("avg positive: ", positive_dist.mean())
+        print("min positive: ", positive_dist.min())
+
+        print("max negative: ", negative_dist.max())
+        print("avg negative: ", negative_dist.mean())
+        print("min negative: ", negative_dist.min())
+
+
 
     print('accuracy: ', right_answers / count)
 
