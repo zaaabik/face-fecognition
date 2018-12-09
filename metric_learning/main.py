@@ -8,7 +8,7 @@ from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
-from tensorflow.python.keras.callbacks import LearningRateScheduler
+from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D
 from tensorflow.python.keras.utils import to_categorical
@@ -125,7 +125,10 @@ def train_resnet():
     p = np.random.permutation(len(all_files))
     all_files = all_files[p]
     all_labels = all_labels[p]
-    callbacks = []
+
+    filepath = "weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    callbacks = [checkpoint]
 
     if lr < 0:
         callbacks.append(LearningRateScheduler(step_decay))
