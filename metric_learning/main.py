@@ -1,5 +1,6 @@
 import optparse
 import os
+import urllib.request
 
 import cv2
 import numpy as np
@@ -30,6 +31,10 @@ parser.add_option('--verbose', type='int')
 parser.add_option('--alpha', type='float')
 parser.add_option('--generator', action='store_true', dest='fit_generator')
 parser.add_option('--prev_weights', type='string')
+parser.add_option('--weights', type='string')
+parser.add_option('--mode', type='string')
+parser.add_option('--urls', nargs=2, action='append', type='string')
+
 (options, args) = parser.parse_args()
 
 lr = options.lr
@@ -39,7 +44,7 @@ epochs = options.epochs
 class_name_max = options.classes
 verbose = options.verbose
 alpha = options.alpha
-fit_generator = options.generator
+fit_generator = options.fit_generator
 
 
 def get_images(files):
@@ -185,5 +190,34 @@ def get_files(path):
     return np.array(all_files), np.array(all_labels)
 
 
+def find_distance(image_urls):
+    images = []
+    for image_url in image_urls:
+        with urllib.request.urlopen(image_url) as image_url:
+            url_response = image_url.read()
+            img_array = np.array(bytearray(url_response), dtype=np.uint8)
+            img = cv2.imdecode(img_array, -1)
+            images.append(img)
+
+    test_distance(np.array(images))
+
+
+def test_distance(images):
+    resnet = create_resnet()
+    if (options.weights is not None) and os.path.exists(options.weights):
+        resnet.load_weights(options.prev_weights)
+    else:
+        raise Exception('Cant find weights !')
+    inferences = resnet.predict(images)
+    for idx, inference in enumerate(inferences):
+        for idx2, inference2 in enumerate(inferences):
+            if idx != idx2:
+                dist = np.linalg.norm(inference - inference2)
+                print(f'{idx} {idx2} dist = {dist}')
+
+
 if __name__ == '__main__':
-    train_resnet()
+    if options.mode == 'train':
+        train_resnet()
+    elif options.mode == 'test':
+        find_distance(options.urls[0])
