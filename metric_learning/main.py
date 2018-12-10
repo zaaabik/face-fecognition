@@ -1,3 +1,4 @@
+import dlib
 import optparse
 import os
 import urllib.request
@@ -196,10 +197,21 @@ def find_distance(image_urls):
         with urllib.request.urlopen(image_url) as image_url:
             url_response = image_url.read()
             img_array = np.array(bytearray(url_response), dtype=np.uint8)
-            img = cv2.imdecode(img_array, -1)
-            img = cv2.resize(img, (input_image_size, input_image_size))
-            img = np.array(img) / 255
+            image = cv2.imdecode(img_array, -1)
 
+            face_detector = dlib.get_frontal_face_detector()
+            faces = face_detector(image, 1)
+            if len(faces) == 0:
+                continue
+
+            face = faces[0]
+            x = face.left()
+            y = face.top()
+            w = face.right() - x
+            h = face.bottom() - y
+            image = image[abs(y):y + h, abs(x):abs(x) + w]
+            img = cv2.resize(image, (input_image_size, input_image_size))
+            img = np.array(img) / 255
             images.append(img)
 
     test_distance(np.array(images))
