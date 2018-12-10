@@ -15,11 +15,9 @@ from metric_learning.resnet34 import level4, level3, level2, level1, level0
 parser = optparse.OptionParser()
 parser.add_option('--dataset')
 parser.add_option('--pairs')
-parser.add_option('--thr')
 parser.add_option('--weights')
-parser.add_option('--find_thr', action='store_true')
+parser.add_option('--step', type='float')
 (options, args) = parser.parse_args()
-find_thr = options.find_thr
 
 
 def read_pairs_file(path):
@@ -76,7 +74,6 @@ def main():
     else:
         print('weights are found')
         resnset.load_weights(options.weights, by_name=True)
-    thr = float(options.thr)
     count = len(pairs)
     pairs = np.array(pairs)
     first_images = pairs[:, 0]
@@ -88,7 +85,7 @@ def main():
     distanses = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
     positive = np.array(positive).flatten()
 
-    thresholds = np.array(np.arange(0, 4, 0.01))
+    thresholds = np.array(np.arange(0, 4, options.steps))
     thr = np.zeros((len(thresholds), len(positive)), dtype=float)
     for idx, val in enumerate(thresholds):
         thr[idx, :] = val
