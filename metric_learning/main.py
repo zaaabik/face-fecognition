@@ -198,7 +198,7 @@ def find_distance(image_urls):
             img_array = np.array(bytearray(url_response), dtype=np.uint8)
             img = cv2.imdecode(img_array, -1)
             img = cv2.resize(img, (input_image_size, input_image_size))
-            img = np.array(img)
+            img = np.array(img) / 255
 
             images.append(img)
 
