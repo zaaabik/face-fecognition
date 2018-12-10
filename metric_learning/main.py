@@ -35,7 +35,7 @@ parser.add_option('--generator', action='store_true', dest='fit_generator')
 parser.add_option('--prev_weights', type='string')
 parser.add_option('--weights', type='string')
 parser.add_option('--mode', type='string')
-parser.add_option('--urls', nargs=2, action='append', type='string')
+parser.add_option('--urls', type='string')
 
 (options, args) = parser.parse_args()
 
@@ -232,4 +232,5 @@ if __name__ == '__main__':
     if options.mode == 'train':
         train_resnet()
     elif options.mode == 'test':
-        find_distance(options.urls[0])
+        urls = options.urls.split(',')
+        find_distance(options.urls)
