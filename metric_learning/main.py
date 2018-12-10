@@ -205,7 +205,7 @@ def find_distance(image_urls):
 def test_distance(images):
     resnet = create_resnet()
     if (options.weights is not None) and os.path.exists(options.weights):
-        resnet.load_weights(options.weights)
+        resnet.load_weights(options.weights, by_name=True)
     else:
         raise Exception('Cant find weights !')
     inferences = resnet.predict(images)
