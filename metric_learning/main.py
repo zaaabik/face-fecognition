@@ -36,6 +36,7 @@ parser.add_option('--prev_weights', type='string')
 parser.add_option('--weights', type='string')
 parser.add_option('--mode', type='string')
 parser.add_option('--urls', type='string')
+parser.add_option('--thr', type='float')
 
 (options, args) = parser.parse_args()
 
@@ -194,6 +195,7 @@ def get_files(path):
 
 def find_distance(image_urls):
     images = []
+    paths = []
     for image_url in image_urls:
         image = imread(image_url)
 
@@ -210,11 +212,12 @@ def find_distance(image_urls):
         image = image[abs(y):y + h, abs(x):abs(x) + w]
         image = np.array(resize(image, (128, 128))) / 255
         images.append(image)
+        paths.append(image_url)
 
-    test_distance(np.array(images))
+    test_distance(np.array(images), paths)
 
 
-def test_distance(images):
+def test_distance(images, paths):
     resnet = create_resnet()
     if (options.weights is not None) and os.path.exists(options.weights):
         resnet.load_weights(options.weights, by_name=True)
@@ -225,7 +228,7 @@ def test_distance(images):
         for idx2, inference2 in enumerate(inferences):
             if idx != idx2:
                 dist = np.linalg.norm(inference - inference2)
-                print(f'{idx} {idx2} dist = {dist}')
+                print(f'{idx} {idx2} dist = {dist} {paths[idx]} {paths[idx2]}')
 
 
 if __name__ == '__main__':
