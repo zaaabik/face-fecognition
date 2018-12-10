@@ -233,4 +233,4 @@ if __name__ == '__main__':
         train_resnet()
     elif options.mode == 'test':
         urls = options.urls.split(',')
-        find_distance(options.urls)
+        find_distance(urls)
