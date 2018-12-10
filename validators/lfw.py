@@ -17,9 +17,9 @@ parser.add_option('--dataset')
 parser.add_option('--pairs')
 parser.add_option('--thr')
 parser.add_option('--weights')
-parser.add_option('--find_thr')
+parser.add_option('--find_thr', action='store_true')
 (options, args) = parser.parse_args()
-find_thr = bool(options.find_thr)
+find_thr = options.find_thr
 
 
 def read_pairs_file(path):

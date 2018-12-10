@@ -20,25 +20,25 @@ output_len = 128
 input_image_size = 128
 
 parser = optparse.OptionParser()
-parser.add_option('--dataset')
-parser.add_option('--classes')
-parser.add_option('--lr')
-parser.add_option('--center')
-parser.add_option('--batch')
-parser.add_option('--epochs')
-parser.add_option('--verbose')
-parser.add_option('--alpha')
-parser.add_option('--generator')
+parser.add_option('--dataset', type='string')
+parser.add_option('--classes', type='int')
+parser.add_option('--lr', type='float')
+parser.add_option('--center', type='float')
+parser.add_option('--batch', type='int')
+parser.add_option('--epochs', type='int')
+parser.add_option('--verbose', type='int')
+parser.add_option('--alpha', type='float')
+parser.add_option('--generator', action='store_true', dest='fit_generator')
 (options, args) = parser.parse_args()
 
-batch_size = int(options.batch)
-lr = float(options.lr)
-center_weight = float(options.center)
-epochs = int(options.epochs)
-class_name_max = int(options.classes)
-verbose = int(options.verbose)
-alpha = float(options.alpha)
-generator = bool(options.generator)
+lr = options.lr
+center_weight = options.center
+batch_size = options.batch
+epochs = options.epochs
+class_name_max = options.classes
+verbose = options.verbose
+alpha = options.alpha
+fit_generator = options.generator
 
 
 def get_images(files):
@@ -47,7 +47,6 @@ def get_images(files):
         img = cv2.imread(file)
         img = cv2.resize(img, (input_image_size, input_image_size))
         img = np.array(img) / 255
-        img = img.astype('float32')
         images.append(img)
 
     return np.array(images)
@@ -127,13 +126,13 @@ def train_resnet():
     all_labels = all_labels[p]
 
     filepath = "weights-improvement-{epoch:02d}-{main_out_acc:.2f}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='main_out_acc', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_main_out_acc', verbose=1, save_best_only=True, mode='max')
     callbacks = [checkpoint]
 
     if lr < 0:
         callbacks.append(LearningRateScheduler(step_decay))
 
-    if generator:
+    if fit_generator:
         x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
         training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
         test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
