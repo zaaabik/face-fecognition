@@ -29,6 +29,7 @@ parser.add_option('--epochs', type='int')
 parser.add_option('--verbose', type='int')
 parser.add_option('--alpha', type='float')
 parser.add_option('--generator', action='store_true', dest='fit_generator')
+parser.add_option('--prev_weights', type='string')
 (options, args) = parser.parse_args()
 
 lr = options.lr
@@ -131,6 +132,9 @@ def train_resnet():
 
     if lr < 0:
         callbacks.append(LearningRateScheduler(step_decay))
+
+    if options.prev_weights and os.path.exists(options.prev_weights):
+        resnet.load_weights(options.prev_weights)
 
     if fit_generator:
         x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
