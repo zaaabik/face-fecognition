@@ -93,7 +93,7 @@ def main():
     for idx, val in enumerate(thresholds):
         thr[idx, :] = val
 
-    res = (distanses - thr)
+    res = (thr - distanses)
     res = np.where(res > 0, True, False)
     thrs_acc = []
     for i in range(0, res.shape[0]):
