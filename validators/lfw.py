@@ -15,11 +15,9 @@ from metric_learning.resnet34 import level4, level3, level2, level1, level0
 parser = optparse.OptionParser()
 parser.add_option('--dataset')
 parser.add_option('--pairs')
-parser.add_option('--thr')
 parser.add_option('--weights')
-parser.add_option('--find_thr', action='store_true')
+parser.add_option('--step', type='float')
 (options, args) = parser.parse_args()
-find_thr = options.find_thr
 
 
 def read_pairs_file(path):
@@ -76,43 +74,42 @@ def main():
     else:
         print('weights are found')
         resnset.load_weights(options.weights, by_name=True)
-    thr = float(options.thr)
     count = len(pairs)
-    right_answers = 0
-    positive_dist = []
-    negative_dist = []
-    for idx, pair in enumerate(pairs):
-        im0 = np.array(resize(imread(pair[0]), (128, 128))) / 255
-        im1 = np.array(resize(imread(pair[1]), (128, 128))) / 255
-        imgs = np.array([im0, im1])
-        inferences = resnset.predict(imgs)
-        dist = np.linalg.norm(inferences[0] - inferences[1])
-        if dist > thr:
-            cur_positive = False
-        else:
-            cur_positive = True
+    pairs = np.array(pairs)
+    first_images = pairs[:, 0]
+    second_images = pairs[:, 1]
+    first_images = read_images(first_images)
+    second_images = read_images(second_images)
+    first_inferences = resnset.predict(first_images)
+    second_inferences = resnset.predict(second_images)
+    distanses = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
+    positive = np.array(positive).flatten()
 
-        if find_thr:
-            if positive[idx]:
-                positive_dist.append(dist)
-            else:
-                negative_dist.append(dist)
-        if positive[idx] == cur_positive:
-            right_answers += 1
-    if find_thr:
-        positive_dist = np.array(positive_dist)
-        negative_dist = np.array(negative_dist)
-        print("max positive: ", positive_dist.max())
-        print("avg positive: ", positive_dist.mean())
-        print("min positive: ", positive_dist.min())
+    thresholds = np.array(np.arange(0, 4, options.step))
+    thr = np.zeros((len(thresholds), len(positive)), dtype=float)
+    for idx, val in enumerate(thresholds):
+        thr[idx, :] = val
 
-        print("max negative: ", negative_dist.max())
-        print("avg negative: ", negative_dist.mean())
-        print("min negative: ", negative_dist.min())
+    res = (thr - distanses)
+    res = np.where(res > 0, True, False)
+    thrs_acc = []
+    for i in range(0, res.shape[0]):
+        right_answers = (res[i] == positive).sum()
+        accuracy = right_answers / count
+        print('accuracy: ', accuracy)
+        thrs_acc.append(accuracy)
+    thrs_acc = np.array(thrs_acc)
+
+    best_thr_arg = np.argmax(thrs_acc)
+    print('best thr ', thresholds[best_thr_arg])
 
 
-
-    print('accuracy: ', right_answers / count)
+def read_images(paths):
+    images = []
+    for path in paths:
+        image = np.array(resize(imread(path), (128, 128))) / 255
+        images.append(image)
+    return np.array(images)
 
 
 def create_resnet():
