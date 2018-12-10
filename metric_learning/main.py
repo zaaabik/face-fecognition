@@ -1,11 +1,11 @@
-import dlib
 import optparse
 import os
-import urllib.request
 
 import cv2
+import dlib
 import numpy as np
 from skimage.io import imread
+from skimage.transform import resize
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
@@ -208,10 +208,8 @@ def find_distance(image_urls):
         w = face.right() - x
         h = face.bottom() - y
         image = image[abs(y):y + h, abs(x):abs(x) + w]
-        img = cv2.resize(image, (input_image_size, input_image_size))
-        img = np.array(img) / 255
-        images.append(img)
-
+        image = np.array(resize(image, (128, 128))) / 255
+        images.append(image)
 
     test_distance(np.array(images))
 
