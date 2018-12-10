@@ -140,7 +140,7 @@ def train_resnet():
         callbacks.append(LearningRateScheduler(step_decay))
 
     if options.prev_weights and os.path.exists(options.prev_weights):
-        resnet.load_weights(options.prev_weights, by_name=True)
+        model.load_weights(options.prev_weights)
 
     if fit_generator:
         x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
