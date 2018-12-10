@@ -85,7 +85,7 @@ def main():
     distanses = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
     positive = np.array(positive).flatten()
 
-    thresholds = np.array(np.arange(0, 4, options.steps))
+    thresholds = np.array(np.arange(0, 4, options.step))
     thr = np.zeros((len(thresholds), len(positive)), dtype=float)
     for idx, val in enumerate(thresholds):
         thr[idx, :] = val
