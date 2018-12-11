@@ -4,6 +4,7 @@ import os
 import numpy as np
 from keras.layers import BatchNormalization
 from skimage.io import imread
+import matplotlib.pyplot as plt
 from skimage.transform import resize
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
@@ -101,6 +102,10 @@ def main():
     thrs_acc = np.array(thrs_acc)
 
     best_thr_arg = np.argmax(thrs_acc)
+    plt.ylabel('accuracy')
+    plt.xlabel('thr')
+    plt.plot(thresholds, thrs_acc)
+    plt.savefig('thrs')
     print('best thr ', thresholds[best_thr_arg])
 
 
