@@ -13,7 +13,7 @@ from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D
+    GlobalAveragePooling2D, Dropout
 from tensorflow.python.keras.utils import to_categorical
 
 from metric_learning.generator import Generator
@@ -72,15 +72,18 @@ def step_decay(epoch):
 
 def create_resnet():
     image_input = Input(shape=(input_image_size, input_image_size, 3))
-    prev = Conv2D(37, (7, 7), (2, 2))(image_input)
+    prev = Dropout(0.1)(image_input)
+    prev = Conv2D(37, (7, 7), (2, 2))(prev)
     prev = Activation('relu')(prev)
     prev = BatchNormalization()(prev)
     prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
 
     prev = level4(prev)
+    prev = Dropout(0.1)(prev)
     prev = level3(prev)
     prev = level2(prev)
     prev = level1(prev)
+    prev = Dropout(0.1)(prev)
     prev = level0(prev)
     prev = GlobalAveragePooling2D()(prev)
     output = Dense(output_len, use_bias=False)(prev)
