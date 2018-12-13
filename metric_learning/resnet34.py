@@ -4,10 +4,10 @@ from tensorflow.python.keras.regularizers import l2
 
 
 def conv_block(feat_maps_out, prev, strides):
-    prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_regularizer=l2(0.0005))(prev)
+    prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_regularizer=l2(0.0009))(prev)
     prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
     prev = Activation('relu')(prev)
-    prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_regularizer=l2(0.0005))(prev)
+    prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_regularizer=l2(0.0009))(prev)
     prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
     return prev
 
@@ -39,7 +39,7 @@ def Ares(prev, n):
 
 
 def Ares_down(prev, n):
-    prev = Residual_down(n, prev)
+    prev = Residual_down(n, prev)it
     prev = Activation('relu')(prev)
     return prev
 
