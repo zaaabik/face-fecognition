@@ -39,7 +39,7 @@ def Ares(prev, n):
 
 
 def Ares_down(prev, n):
-    prev = Residual_down(n, prev)it
+    prev = Residual_down(n, prev)
     prev = Activation('relu')(prev)
     return prev
 
