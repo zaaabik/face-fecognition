@@ -4,6 +4,7 @@ import os
 import cv2
 import dlib
 import numpy as np
+from matplotlib import pyplot as plt
 from skimage.io import imread
 from skimage.transform import resize
 from sklearn.model_selection import train_test_split
@@ -152,14 +153,22 @@ def train_resnet():
         training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
         test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
 
-        model.fit_generator(training_generator,
-                            epochs=epochs,
-                            steps_per_epoch=len(y_train) // batch_size,
-                            verbose=verbose,
-                            validation_data=test_generator,
-                            validation_steps=len(y_test) // batch_size,
-                            callbacks=callbacks
-                            )
+        history = model.fit_generator(training_generator,
+                                      epochs=epochs,
+                                      steps_per_epoch=len(y_train) // batch_size,
+                                      verbose=verbose,
+                                      validation_data=test_generator,
+                                      validation_steps=len(y_test) // batch_size,
+                                      callbacks=callbacks
+                                      )
+
+        plt.plot(history.history['val_main_out_acc'])
+        plt.plot(history.history['main_out_acc'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['validation data', 'train data'], loc='upper left')
+        plt.savefig('training')
     else:
         images = get_images(all_files)
         dummy = np.zeros((np.array(images).shape[0], 1))
