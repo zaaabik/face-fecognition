@@ -84,7 +84,7 @@ def create_resnet():
     prev = level3(prev)
     prev = level2(prev)
     prev = level1(prev)
-    prev = Dropout(0.1)(prev)
+    prev = Dropout(0.35)(prev)
     prev = level0(prev)
     prev = GlobalAveragePooling2D()(prev)
     output = Dense(output_len, use_bias=False)(prev)
