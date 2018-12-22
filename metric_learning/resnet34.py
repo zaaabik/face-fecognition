@@ -3,7 +3,7 @@ from tensorflow.python.keras.layers import BatchNormalization, Conv2D, add, AvgP
     Activation
 from tensorflow.python.keras.regularizers import l2
 
-max_norm = 2.5
+max_norm = 4
 kernel_regularizer = l2(0.01)
 bias_regularizer = l2(0.01)
 
