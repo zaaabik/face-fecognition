@@ -3,9 +3,9 @@ from tensorflow.python.keras.layers import BatchNormalization, Conv2D, add, AvgP
     Activation
 from tensorflow.python.keras.regularizers import l2
 
-max_norm = 5
-kernel_regularizer = l2(0.007)
-bias_regularizer = l2(0.007)
+max_norm = 2555
+kernel_regularizer = l2(0.00001)
+bias_regularizer = l2(0.00001)
 
 
 def conv_block(feat_maps_out, prev, strides):
