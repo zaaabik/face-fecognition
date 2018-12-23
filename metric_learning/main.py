@@ -73,7 +73,7 @@ def step_decay(epoch):
 
 def create_resnet():
     image_input = Input(shape=(input_image_size, input_image_size, 3))
-    prev = Conv2D(37, (7, 7), (2, 2))(prev)
+    prev = Conv2D(37, (7, 7), (2, 2))(image_input)
     prev = Activation('relu')(prev)
     prev = BatchNormalization()(prev)
     prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
