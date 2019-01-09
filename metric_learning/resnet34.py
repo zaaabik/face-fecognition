@@ -20,7 +20,7 @@ class Resnet34:
                       kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
         prev = Activation('relu')(prev)
-        prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_constraint=maxnorm(max_norm),
+        prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_constraint=self.max_norm,
                       kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
         return prev
