@@ -158,7 +158,7 @@ def train_resnet():
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['validation data', 'train data'], loc='upper left')
-        plt.savefig('training')
+        plt.savefig(f'training k_r={kernel_regularization} b_r={bias_regularization} max_norm={max_norm} lr={lr}')
     else:
         images = get_images(all_files)
         dummy = np.zeros((np.array(images).shape[0], 1))
