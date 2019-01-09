@@ -13,12 +13,11 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
-from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout
+from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.utils import to_categorical
 
 from metric_learning.generator import Generator
-from metric_learning.resnet34 import level4, level1, level0, level3, level2
+from metric_learning.resnet34 import Resnet34
 
 output_len = 128
 input_image_size = 128
@@ -28,6 +27,9 @@ parser.add_option('--dataset', type='string')
 parser.add_option('--classes', type='int')
 parser.add_option('--lr', type='float')
 parser.add_option('--center', type='float')
+parser.add_option('--k_r', type='float', default=0.)
+parser.add_option('--b_r', type='float', default=0.)
+parser.add_option('--max_norm', type='float', default=np.inf)
 parser.add_option('--batch', type='int')
 parser.add_option('--epochs', type='int')
 parser.add_option('--verbose', type='int')
@@ -49,6 +51,9 @@ class_name_max = options.classes
 verbose = options.verbose
 alpha = options.alpha
 fit_generator = options.fit_generator
+kernel_regularization = options.k_r
+bias_regularization = options.b_r
+max_norm = options.max_norm
 
 
 def get_images(files):
@@ -72,20 +77,8 @@ def step_decay(epoch):
 
 
 def create_resnet():
-    image_input = Input(shape=(input_image_size, input_image_size, 3))
-    prev = Conv2D(37, (7, 7), (2, 2))(image_input)
-    prev = Activation('relu')(prev)
-    prev = BatchNormalization()(prev)
-    prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
-
-    prev = level4(prev)
-    prev = level3(prev)
-    prev = level2(prev)
-    prev = level1(prev)
-    prev = level0(prev)
-    prev = GlobalAveragePooling2D()(prev)
-    output = Dense(output_len, use_bias=False)(prev)
-    return Model(image_input, output)
+    resnet = Resnet34(kernel_regularization, bias_regularization, max_norm, input_image_size, output_len)
+    return resnet.create_model()
 
 
 class CenterLossLayer(Layer):

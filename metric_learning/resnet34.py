@@ -1,85 +1,98 @@
 from keras.constraints import maxnorm
-from tensorflow.python.keras.layers import BatchNormalization, Conv2D, add, AvgPool2D, \
-    Activation
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Input
+from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
+    GlobalAveragePooling2D
+from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
 
-max_norm = 2555
-kernel_regularizer = l2(0.00001)
-bias_regularizer = l2(0.00001)
 
+class Resnet34:
+    def __init__(self, kernel_regularization, bias_regularization, max_norm, input_size, output_size):
+        self.kernel_regularization = l2(kernel_regularization)
+        self.bias_regularization = l2(bias_regularization)
+        self.max_norm = maxnorm(max_norm)
+        self.input_size = input_size
+        self.output_size = output_size
 
-def conv_block(feat_maps_out, prev, strides):
-    prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_constraint=maxnorm(max_norm),
-                  kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer)(prev)
-    prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
-    prev = Activation('relu')(prev)
-    prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_constraint=maxnorm(max_norm),
-                  kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer)(prev)
-    prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
-    return prev
+    def conv_block(self, feat_maps_out, prev, strides):
+        prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_constraint=self.max_norm,
+                      kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
+        prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
+        prev = Activation('relu')(prev)
+        prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_constraint=maxnorm(max_norm),
+                      kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
+        prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
+        return prev
 
+    def skip_block(self, feat_maps_out, prev):
+        if prev.shape[-1] != feat_maps_out:
+            # This adds in a 1x1 convolution on shortcuts that map between an uneven amount of channels
+            prev = Conv2D(feat_maps_out, (1, 1), padding='same')(prev)
+        return prev
 
-def skip_block(feat_maps_out, prev):
-    if prev.shape[-1] != feat_maps_out:
-        # This adds in a 1x1 convolution on shortcuts that map between an uneven amount of channels
-        prev = Conv2D(feat_maps_out, (1, 1), padding='same')(prev)
-    return prev
+    def Residual_down(self, output, prev):
+        skip = self.skip_block(output, prev)
+        skip = AvgPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(skip)
+        conv = self.conv_block(output, prev, (2, 2))
+        return add([skip, conv])
 
+    def Residual(self, output, prev):
+        skip = self.skip_block(output, prev)
+        conv = self.conv_block(output, prev, (1, 1))
+        return add([skip, conv])
 
-def Residual_down(output, prev):
-    skip = skip_block(output, prev)
-    skip = AvgPool2D(pool_size=(2, 2), strides=(2, 2), padding='same')(skip)
-    conv = conv_block(output, prev, (2, 2))
-    return add([skip, conv])
+    def Ares(self, prev, n):
+        prev = self.Residual(n, prev)
+        prev = Activation('relu')(prev)
+        return prev
 
+    def Ares_down(self, prev, n):
+        prev = self.Residual_down(n, prev)
+        prev = Activation('relu')(prev)
+        return prev
 
-def Residual(output, prev):
-    skip = skip_block(output, prev)
-    conv = conv_block(output, prev, (1, 1))
-    return add([skip, conv])
+    def level0(self, prev):
+        prev = self.Ares_down(prev, 256)
+        return prev
 
+    def level1(self, prev):
+        prev = self.Ares(prev, 128)
+        prev = self.Ares(prev, 256)
+        prev = self.Ares(prev, 256)
+        return prev
 
-def Ares(prev, n):
-    prev = Residual(n, prev)
-    prev = Activation('relu')(prev)
-    return prev
+    def level2(self, prev):
+        prev = self.Ares(prev, 128)
+        prev = self.Ares(prev, 128)
+        prev = self.Ares(prev, 128)
+        return prev
 
+    def level3(self, prev):
+        prev = self.Ares(prev, 64)
+        prev = self.Ares(prev, 64)
+        prev = self.Ares(prev, 64)
+        prev = self.Ares(prev, 64)
+        return prev
 
-def Ares_down(prev, n):
-    prev = Residual_down(n, prev)
-    prev = Activation('relu')(prev)
-    return prev
+    def level4(self, prev):
+        prev = self.Ares(prev, 32)
+        prev = self.Ares(prev, 32)
+        prev = self.Ares(prev, 32)
+        return prev
 
+    def create_model(self):
+        image_input = Input(shape=(self.input_size, self.input_size, 3))
+        prev = Conv2D(37, (7, 7), (2, 2))(image_input)
+        prev = Activation('relu')(prev)
+        prev = BatchNormalization()(prev)
+        prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
 
-def level0(prev):
-    prev = Ares_down(prev, 256)
-    return prev
-
-
-def level1(prev):
-    prev = Ares(prev, 128)
-    prev = Ares(prev, 256)
-    prev = Ares(prev, 256)
-    return prev
-
-
-def level2(prev):
-    prev = Ares(prev, 128)
-    prev = Ares(prev, 128)
-    prev = Ares(prev, 128)
-    return prev
-
-
-def level3(prev):
-    prev = Ares(prev, 64)
-    prev = Ares(prev, 64)
-    prev = Ares(prev, 64)
-    prev = Ares(prev, 64)
-    return prev
-
-
-def level4(prev):
-    prev = Ares(prev, 32)
-    prev = Ares(prev, 32)
-    prev = Ares(prev, 32)
-    return prev
+        prev = self.level4(prev)
+        prev = self.level3(prev)
+        prev = self.level2(prev)
+        prev = self.level1(prev)
+        prev = self.level0(prev)
+        prev = GlobalAveragePooling2D()(prev)
+        output = Dense(self.output_size, use_bias=False)(prev)
+        return Model(image_input, output)
