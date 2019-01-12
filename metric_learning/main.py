@@ -140,7 +140,7 @@ def train_resnet():
         model.load_weights(options.prev_weights)
 
     if fit_generator:
-        x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
+        x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2, random_state=42)
         training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
         test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
 
