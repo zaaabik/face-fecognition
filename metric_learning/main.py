@@ -68,12 +68,12 @@ def get_images(files):
 
 
 def step_decay(epoch):
-    if epoch < 60:
-        return 0.05
-    elif 60 <= epoch < 80:
-        return 0.005
+    if epoch < 20:
+        return 0.1
+    elif 20 <= epoch < 40:
+        return 0.01
     else:
-        return 0.0005
+        return 0.001
 
 
 def create_resnet():
@@ -123,6 +123,7 @@ def train_resnet():
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
+
     all_files, all_labels = get_files(options.dataset)
     p = np.random.permutation(len(all_files))
     all_files = all_files[p]
