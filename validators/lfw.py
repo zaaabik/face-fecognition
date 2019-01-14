@@ -11,7 +11,7 @@ from tensorflow.keras.layers import Input
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D
 
-from metric_learning.resnet34 import level4, level3, level2, level1, level0
+from metric_learning.resnet34 import Resnet34
 
 parser = optparse.OptionParser()
 parser.add_option('--dataset')
@@ -69,7 +69,8 @@ def add_extension(path):
 def main():
     pairs = read_pairs_file(options.pairs)
     pairs, positive = create_pairs(options.dataset, pairs)
-    resnset = create_resnet()
+    resnet = Resnet34(0, 0, np.inf, 128, 128)
+    resnset = resnet.create_model()
     if not os.path.exists(options.weights):
         print('can not find weights')
     else:
@@ -115,23 +116,6 @@ def read_images(paths):
         image = np.array(resize(imread(path), (128, 128))) / 255
         images.append(image)
     return np.array(images)
-
-
-def create_resnet():
-    image_input = Input(shape=(128, 128, 3))
-    prev = Conv2D(37, (7, 7), (2, 2))(image_input)
-    prev = Activation('relu')(prev)
-    prev = BatchNormalization()(prev)
-    prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
-
-    prev = level4(prev)
-    prev = level3(prev)
-    prev = level2(prev)
-    prev = level1(prev)
-    prev = level0(prev)
-    prev = GlobalAveragePooling2D()(prev)
-    output = Dense(128, use_bias=False)(prev)
-    return Model(image_input, output)
 
 
 if __name__ == '__main__':
