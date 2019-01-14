@@ -68,9 +68,11 @@ def get_images(files):
 
 
 def step_decay(epoch):
-    if epoch < 20:
+    if epoch < 15:
         return 0.1
-    elif 20 <= epoch < 40:
+    elif 15 <= epoch < 30:
+        return 0.05
+    elif 30 <= epoch < 40:
         return 0.01
     else:
         return 0.001
