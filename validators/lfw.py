@@ -82,7 +82,7 @@ def main():
     distanses = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
     positive = np.array(positive).flatten()
 
-    thresholds = np.array(np.arange(0, 4, options.step))
+    thresholds = np.array(np.arange(0, 1.5, options.step))
     thr = np.zeros((len(thresholds), len(positive)), dtype=float)
     for idx, val in enumerate(thresholds):
         thr[idx, :] = val
@@ -103,6 +103,7 @@ def main():
     plt.plot(thresholds, thrs_acc)
     plt.savefig('thrs')
     print('best thr ', thresholds[best_thr_arg])
+    print('best accuracy', np.max(thrs_acc))
 
 
 def read_images(paths):
