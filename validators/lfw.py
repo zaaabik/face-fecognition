@@ -2,14 +2,9 @@ import optparse
 import os
 
 import numpy as np
-from keras.layers import BatchNormalization
 from skimage.io import imread
 import matplotlib.pyplot as plt
 from skimage.transform import resize
-from tensorflow.keras import Model
-from tensorflow.keras.layers import Input
-from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D
 
 from metric_learning.resnet34 import Resnet34
 
