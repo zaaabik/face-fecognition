@@ -1,6 +1,8 @@
 from keras.constraints import maxnorm
+from keras_applications.resnet50 import ResNet50
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
+
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D
 from tensorflow.python.keras.layers import add, AvgPool2D
@@ -8,12 +10,13 @@ from tensorflow.python.keras.regularizers import l2
 
 
 class Resnet34:
-    def __init__(self, kernel_regularization, bias_regularization, max_norm, input_size, output_size):
+    def __init__(self, kernel_regularization, bias_regularization, max_norm, input_size, output_size, app=False):
         self.kernel_regularization = l2(kernel_regularization)
         self.bias_regularization = l2(bias_regularization)
         self.max_norm = maxnorm(max_norm)
         self.input_size = input_size
         self.output_size = output_size
+        self.app = app
 
     def conv_block(self, feat_maps_out, prev, strides):
         prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_constraint=self.max_norm,
@@ -82,6 +85,10 @@ class Resnet34:
         return prev
 
     def create_model(self):
+        if self.app:
+            resnet = ResNet50(classes=128, pooling='max', input_shape=(128.128, 3))
+            return resnet
+
         image_input = Input(shape=(self.input_size, self.input_size, 3))
         prev = Conv2D(37, (7, 7), (2, 2))(image_input)
         prev = Activation('relu')(prev)

@@ -35,6 +35,7 @@ parser.add_option('--epochs', type='int')
 parser.add_option('--verbose', type='int')
 parser.add_option('--alpha', type='float')
 parser.add_option('--generator', action='store_true', dest='fit_generator')
+parser.add_option('--app', action='store_true', dest='app')
 parser.add_option('--prev_weights', type='string')
 parser.add_option('--weights', type='string')
 parser.add_option('--mode', type='string')
@@ -54,6 +55,7 @@ fit_generator = options.fit_generator
 kernel_regularization = options.k_r
 bias_regularization = options.b_r
 max_norm = options.max_norm
+app = options.app
 
 
 def get_images(files):
