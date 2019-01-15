@@ -72,12 +72,12 @@ def get_images(files):
 def step_decay(epoch):
     if epoch < 15:
         return 0.001
-    elif 15 <= epoch < 25:
+    elif 20 <= epoch < 30:
+        return 0.0007
+    elif 30 <= epoch < 40:
         return 0.0005
-    elif 25 <= epoch < 37:
-        return 0.0001
     else:
-        return 0.00001
+        return 0.0001
 
 
 def create_resnet():
