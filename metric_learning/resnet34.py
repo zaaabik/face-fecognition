@@ -1,5 +1,5 @@
 from keras.constraints import maxnorm
-from keras_applications.resnet50 import ResNet50
+from keras.applications.resnet50 import ResNet50
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
