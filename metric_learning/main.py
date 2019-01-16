@@ -35,6 +35,7 @@ parser.add_option('--epochs', type='int')
 parser.add_option('--verbose', type='int')
 parser.add_option('--alpha', type='float')
 parser.add_option('--generator', action='store_true', dest='fit_generator')
+parser.add_option('--sgd', action='store_true', dest='sgd')
 parser.add_option('--app', action='store_true', dest='app')
 parser.add_option('--prev_weights', type='string')
 parser.add_option('--weights', type='string')
@@ -56,6 +57,7 @@ kernel_regularization = options.k_r
 bias_regularization = options.b_r
 max_norm = options.max_norm
 app = options.app
+sgd = options.sgd
 
 
 def get_images(files):
@@ -124,6 +126,8 @@ def train_resnet():
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.Adam(lr=lr)
+    if sgd:
+        optim = optimizers.SGD(lr=lr, momentum=0.9)
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
