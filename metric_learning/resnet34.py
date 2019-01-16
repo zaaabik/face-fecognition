@@ -86,7 +86,7 @@ class Resnet34:
 
     def create_model(self):
         if self.app:
-            resnet = ResNet50(classes=128, pooling='max', input_shape=(128.128, 3))
+            resnet = ResNet50(classes=128, pooling='max', input_shape=(128, 128, 3))
             return resnet
 
         image_input = Input(shape=(self.input_size, self.input_size, 3))
