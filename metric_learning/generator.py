@@ -24,7 +24,13 @@ class Generator(Sequence):
         images = np.array([
             np.array(resize(imread(file_name), (self.image_size, self.image_size))) / 255
             for file_name in batch_x])
+        y_flip_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
+        fliped_images = images = np.array([
+            np.flip(np.array(resize(imread(file_name), 0), (self.image_size, self.image_size))) / 255
+            for file_name in batch_x])
 
-        dummy = np.zeros((np.array(batch_x).shape[0], 1))
+        dummy = np.zeros((np.array(batch_x).shape[0] * 2, 1))
+        images = np.concatenate(images, fliped_images)
+        y_labels = np.concatenate(y_labels, y_flip_labels)
 
         return [images, y_labels], [y_labels, dummy]
