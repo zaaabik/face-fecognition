@@ -30,7 +30,7 @@ class Generator(Sequence):
             for file_name in batch_x])
 
         dummy = np.zeros((np.array(batch_x).shape[0] * 2, 1))
-        images = np.concatenate(images, fliped_images)
-        y_labels = np.concatenate(y_labels, y_flip_labels)
+        images = np.concatenate((fliped_images, images))
+        y_labels = np.concatenate((y_labels, y_flip_labels))
 
         return [images, y_labels], [y_labels, dummy]
