@@ -149,8 +149,8 @@ def train_resnet():
 
     if fit_generator:
         x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2)
-        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
-        test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
+        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max, True)
+        test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max, False)
 
         history = model.fit_generator(training_generator,
                                       epochs=epochs,
