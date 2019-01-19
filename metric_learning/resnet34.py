@@ -95,9 +95,9 @@ class Resnet34:
         prev = BatchNormalization()(prev)
         prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
 
-        prev = self.level4(prev)
-        prev = self.level3(prev)
-        prev = self.level2(prev)
+        # prev = self.level4(prev)
+        # prev = self.level3(prev)
+        # prev = self.level2(prev)
         prev = self.level1(prev)
         prev = self.level0(prev)
         prev = GlobalAveragePooling2D()(prev)
