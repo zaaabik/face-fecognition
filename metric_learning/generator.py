@@ -26,7 +26,7 @@ class Generator(Sequence):
             for file_name in batch_x])
         y_flip_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
         fliped_images = np.array([
-            np.flip(np.array(resize(imread(file_name), 0), (self.image_size, self.image_size))) / 255
+            np.flip(np.array(resize(imread(file_name), (self.image_size, self.image_size))) / 255, 1)
             for file_name in batch_x])
 
         dummy = np.zeros((np.array(batch_x).shape[0] * 2, 1))
