@@ -14,11 +14,13 @@ class Generator(Sequence):
         self.classes_count = classes_count
 
     def __len__(self):
-        return len(self.all_files) // self.batch_size
+        b_s = self.batch_size // 2
+        return len(self.all_files) // b_s
 
     def __getitem__(self, idx):
-        batch_x = self.all_files[idx * self.batch_size:(idx + 1) * self.batch_size]
-        batch_y = self.all_labels[idx * self.batch_size:(idx + 1) * self.batch_size]
+        b_s = self.batch_size // 2
+        batch_x = self.all_files[idx * b_s:(idx + 1) * b_s]
+        batch_y = self.all_labels[idx * b_s:(idx + 1) * b_s]
 
         y_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
         images = np.array([
