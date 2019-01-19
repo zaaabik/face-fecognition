@@ -154,7 +154,7 @@ def train_resnet():
 
         history = model.fit_generator(training_generator,
                                       epochs=epochs,
-                                      steps_per_epoch=len(y_train) // batch_size,
+                                      steps_per_epoch=len(y_train * 2) // batch_size,
                                       verbose=verbose,
                                       validation_data=test_generator,
                                       validation_steps=len(y_test) // batch_size,
