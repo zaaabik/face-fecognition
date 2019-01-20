@@ -35,6 +35,7 @@ parser.add_option('--epochs', type='int')
 parser.add_option('--verbose', type='int')
 parser.add_option('--alpha', type='float')
 parser.add_option('--generator', action='store_true', dest='fit_generator')
+parser.add_option('--aug', action='store_true', dest='aug', default=False)
 parser.add_option('--sgd', action='store_true', dest='sgd')
 parser.add_option('--app', action='store_true', dest='app')
 parser.add_option('--prev_weights', type='string')
@@ -58,6 +59,7 @@ bias_regularization = options.b_r
 max_norm = options.max_norm
 app = options.app
 sgd = options.sgd
+aug = options.aug
 
 
 def get_images(files):
@@ -149,7 +151,7 @@ def train_resnet():
 
     if fit_generator:
         x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2)
-        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max, True)
+        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max, aug)
         test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max, False)
 
         history = model.fit_generator(training_generator,
@@ -241,6 +243,7 @@ def test_distance(images, paths):
 
 
 if __name__ == '__main__':
+    print(aug)
     if options.mode == 'train':
         train_resnet()
     elif options.mode == 'test':
