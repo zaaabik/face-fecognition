@@ -13,12 +13,11 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
-from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout
+from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.utils import to_categorical
 
 from metric_learning.generator import Generator
-from metric_learning.resnet34 import level4, level1, level0, level3, level2
+from metric_learning.resnet34 import Resnet34
 
 output_len = 128
 input_image_size = 128
@@ -28,11 +27,17 @@ parser.add_option('--dataset', type='string')
 parser.add_option('--classes', type='int')
 parser.add_option('--lr', type='float')
 parser.add_option('--center', type='float')
+parser.add_option('--k_r', type='float', default=0.)
+parser.add_option('--b_r', type='float', default=0.)
+parser.add_option('--max_norm', type='float', default=np.inf)
 parser.add_option('--batch', type='int')
 parser.add_option('--epochs', type='int')
 parser.add_option('--verbose', type='int')
 parser.add_option('--alpha', type='float')
 parser.add_option('--generator', action='store_true', dest='fit_generator')
+parser.add_option('--aug', action='store_true', dest='aug', default=False)
+parser.add_option('--sgd', action='store_true', dest='sgd')
+parser.add_option('--app', action='store_true', dest='app')
 parser.add_option('--prev_weights', type='string')
 parser.add_option('--weights', type='string')
 parser.add_option('--mode', type='string')
@@ -49,6 +54,12 @@ class_name_max = options.classes
 verbose = options.verbose
 alpha = options.alpha
 fit_generator = options.fit_generator
+kernel_regularization = options.k_r
+bias_regularization = options.b_r
+max_norm = options.max_norm
+app = options.app
+sgd = options.sgd
+aug = options.aug
 
 
 def get_images(files):
@@ -63,29 +74,19 @@ def get_images(files):
 
 
 def step_decay(epoch):
-    if epoch < 60:
-        return 0.05
-    elif 60 <= epoch < 80:
-        return 0.005
-    else:
+    if epoch < 15:
+        return 0.001
+    elif 20 <= epoch < 30:
+        return 0.0007
+    elif 30 <= epoch < 40:
         return 0.0005
+    else:
+        return 0.0001
 
 
 def create_resnet():
-    image_input = Input(shape=(input_image_size, input_image_size, 3))
-    prev = Conv2D(37, (7, 7), (2, 2))(image_input)
-    prev = Activation('relu')(prev)
-    prev = BatchNormalization()(prev)
-    prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
-
-    prev = level4(prev)
-    prev = level3(prev)
-    prev = level2(prev)
-    prev = level1(prev)
-    prev = level0(prev)
-    prev = GlobalAveragePooling2D()(prev)
-    output = Dense(output_len, use_bias=False)(prev)
-    return Model(image_input, output)
+    resnet = Resnet34(kernel_regularization, bias_regularization, max_norm, input_image_size, output_len, app)
+    return resnet.create_model()
 
 
 class CenterLossLayer(Layer):
@@ -127,16 +128,19 @@ def train_resnet():
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.Adam(lr=lr)
+    if sgd:
+        optim = optimizers.SGD(lr=lr, momentum=0.9)
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
+
     all_files, all_labels = get_files(options.dataset)
     p = np.random.permutation(len(all_files))
     all_files = all_files[p]
     all_labels = all_labels[p]
 
     filepath = "weights-improvement-{epoch:02d}-{val_main_out_acc:.2f}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_main_out_acc', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_main_out_acc', verbose=1, save_best_only=False, mode='max')
     callbacks = [checkpoint]
 
     if lr < 0:
@@ -146,16 +150,14 @@ def train_resnet():
         model.load_weights(options.prev_weights)
 
     if fit_generator:
-        x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2, random_state=1)
-        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
-        test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
+        x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2)
+        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max, aug)
+        test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max, False)
 
         history = model.fit_generator(training_generator,
                                       epochs=epochs,
-                                      steps_per_epoch=len(y_train) // batch_size,
                                       verbose=verbose,
                                       validation_data=test_generator,
-                                      validation_steps=len(y_test) // batch_size,
                                       callbacks=callbacks
                                       )
 
@@ -165,7 +167,7 @@ def train_resnet():
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['validation data', 'train data'], loc='upper left')
-        plt.savefig('training')
+        plt.savefig(f'training k_r={kernel_regularization} b_r={bias_regularization} max_norm={max_norm} lr={lr}.png')
     else:
         images = get_images(all_files)
         dummy = np.zeros((np.array(images).shape[0], 1))
@@ -241,6 +243,7 @@ def test_distance(images, paths):
 
 
 if __name__ == '__main__':
+    print(aug)
     if options.mode == 'train':
         train_resnet()
     elif options.mode == 'test':
