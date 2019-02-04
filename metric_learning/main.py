@@ -61,7 +61,6 @@ sgd = options.sgd
 aug = options.aug
 drop = options.drop
 
-
 def get_images(files):
     images = []
     for file in files:
@@ -85,7 +84,7 @@ def step_decay(epoch):
 
 
 def create_resnet():
-    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, app)
+    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, drop=drop, app=app)
     return resnet.create_model()
 
 
