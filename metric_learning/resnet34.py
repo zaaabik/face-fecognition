@@ -20,6 +20,7 @@ class Resnet34:
 
     def conv_block(self, feat_maps_out, prev, strides):
         prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_constraint=self.max_norm,
+                      kernel_initializer='he_normal',
                       kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
         prev = Activation('relu')(prev)
@@ -90,7 +91,7 @@ class Resnet34:
             return resnet
 
         image_input = Input(shape=(self.input_size, self.input_size, 3))
-        prev = Conv2D(37, (7, 7), (2, 2))(image_input)
+        prev = Conv2D(37, (7, 7), (2, 2), kernel_initializer='he_normal')(image_input)
         prev = Activation('relu')(prev)
         prev = BatchNormalization()(prev)
         prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
