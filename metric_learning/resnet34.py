@@ -10,17 +10,16 @@ from tensorflow.python.keras.regularizers import l2
 
 
 class Resnet34:
-    def __init__(self, kernel_regularization, bias_regularization, max_norm, input_size, output_size, drop=0, app=False):
+    def __init__(self, kernel_regularization, bias_regularization, input_size, output_size, drop=0., app=False):
         self.kernel_regularization = l2(kernel_regularization)
         self.bias_regularization = l2(bias_regularization)
-        self.max_norm = maxnorm(max_norm)
         self.input_size = input_size
         self.output_size = output_size
         self.app = app
         self.drop = drop
 
     def conv_block(self, feat_maps_out, prev, strides):
-        prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_constraint=self.max_norm,
+        prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same',
                       kernel_initializer='he_normal',
                       kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging

@@ -29,7 +29,6 @@ parser.add_option('--lr', type='float')
 parser.add_option('--center', type='float')
 parser.add_option('--k_r', type='float', default=0.)
 parser.add_option('--b_r', type='float', default=0.)
-parser.add_option('--max_norm', type='float', default=np.inf)
 parser.add_option('--batch', type='int')
 parser.add_option('--epochs', type='int')
 parser.add_option('--verbose', type='int')
@@ -57,7 +56,6 @@ alpha = options.alpha
 fit_generator = options.fit_generator
 kernel_regularization = options.k_r
 bias_regularization = options.b_r
-max_norm = options.max_norm
 app = options.app
 sgd = options.sgd
 aug = options.aug
@@ -87,7 +85,7 @@ def step_decay(epoch):
 
 
 def create_resnet():
-    resnet = Resnet34(kernel_regularization, bias_regularization, max_norm, input_image_size, output_len, app)
+    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, app)
     return resnet.create_model()
 
 
@@ -169,7 +167,7 @@ def train_resnet():
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['validation data', 'train data'], loc='upper left')
-        plt.savefig(f'training k_r={kernel_regularization} b_r={bias_regularization} max_norm={max_norm} lr={lr}.png')
+        plt.savefig(f'training k_r={kernel_regularization} b_r={bias_regularization} lr={lr}.png')
     else:
         images = get_images(all_files)
         dummy = np.zeros((np.array(images).shape[0], 1))
