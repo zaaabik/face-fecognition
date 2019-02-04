@@ -1,4 +1,3 @@
-from keras.constraints import maxnorm
 from keras.applications.resnet50 import ResNet50
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
@@ -19,13 +18,12 @@ class Resnet34:
         self.drop = drop
 
     def conv_block(self, feat_maps_out, prev, strides):
-        prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same',
-                      kernel_initializer='he_normal',
+        prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_initializer='he_normal',
                       kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
         prev = Activation('relu')(prev)
-        prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_constraint=self.max_norm,
-                      kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
+        prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_regularizer=self.kernel_regularization,
+                      bias_regularizer=self.bias_regularization)(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
         return prev
 
