@@ -43,6 +43,7 @@ parser.add_option('--weights', type='string')
 parser.add_option('--mode', type='string')
 parser.add_option('--urls', type='string')
 parser.add_option('--thr', type='float')
+parser.add_option('--drop', type='float', default=0.)
 
 (options, args) = parser.parse_args()
 
@@ -60,6 +61,7 @@ max_norm = options.max_norm
 app = options.app
 sgd = options.sgd
 aug = options.aug
+drop = options.drop
 
 
 def get_images(files):
