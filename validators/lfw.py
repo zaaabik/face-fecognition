@@ -64,7 +64,7 @@ def add_extension(path):
 def main():
     pairs = read_pairs_file(options.pairs)
     pairs, positive = create_pairs(options.dataset, pairs)
-    resnet = Resnet34(0, 0, np.inf, 128, 128)
+    resnet = Resnet34(0, 0, 128, 128)
     resnset = resnet.create_model()
     if not os.path.exists(options.weights):
         print('can not find weights')
