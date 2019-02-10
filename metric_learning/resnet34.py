@@ -112,28 +112,26 @@ class Resnet34:
             return self.__test_model()
 
     def __test_model(self):
-        model = Sequential()
+        input_layer = BatchNormalization(input_shape=(self.input_size, self.input_size, 3))
 
-        model.add(BatchNormalization(input_shape=(self.input_size, self.input_size, 3)))
+        prev = Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(input_layer)
+        prev = Activation('relu')(prev)
+        prev = MaxPooling2D(pool_size=(2, 2))(prev)
 
-        model.add(Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal'))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        prev = Conv2D(64, (3, 3), kernel_initializer='he_normal')(prev)
+        prev = Activation('relu')(prev)
+        prev = MaxPooling2D(pool_size=(2, 2))(prev)
 
-        model.add(Conv2D(64, (3, 3), kernel_initializer='he_normal'))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        prev = Conv2D(128, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(prev)
+        prev = Activation('relu')(prev)
+        prev = MaxPooling2D(pool_size=(2, 2))(prev)
 
-        model.add(Conv2D(128, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal'))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        prev = Conv2D(32, kernel_size=(3, 3), kernel_initializer='he_normal')(prev)
+        prev = Activation('relu')(prev)
+        prev = MaxPooling2D(pool_size=(2, 2))(prev)
 
-        model.add(Conv2D(32, kernel_size=(3, 3), kernel_initializer='he_normal'))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        prev = GlobalMaxPooling2D()(prev)
 
-        model.add(GlobalMaxPooling2D())
-
-        model.add(Dense(self.output_size, use_bias=False))  # 512
-        model.add(Activation('relu'))
-        return model
+        prev = Dense(self.output_size)(prev)
+        prev = Activation('relu')(prev)
+        return Model(input_layer, prev)
