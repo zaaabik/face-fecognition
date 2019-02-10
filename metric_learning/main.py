@@ -84,7 +84,7 @@ def step_decay(epoch):
 
 
 def create_resnet():
-    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, drop=drop, app=arch)
+    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, drop=drop, arch=arch)
     return resnet.create_model()
 
 
