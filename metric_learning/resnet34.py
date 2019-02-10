@@ -1,5 +1,4 @@
 from keras.applications.resnet50 import ResNet50
-from keras.layers import GlobalMaxPooling2D
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
@@ -130,7 +129,7 @@ class Resnet34:
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = GlobalMaxPooling2D()(prev)
+        prev = GlobalAveragePooling2D()(prev)
 
         prev = Dense(self.output_size)(prev)
         prev = Activation('relu')(prev)
