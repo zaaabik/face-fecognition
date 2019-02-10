@@ -1,6 +1,5 @@
-from keras import Sequential
 from keras.applications.resnet50 import ResNet50
-from keras.layers import MaxPooling2D, GlobalMaxPooling2D
+from keras.layers import GlobalMaxPooling2D
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
@@ -112,23 +111,24 @@ class Resnet34:
             return self.__test_model()
 
     def __test_model(self):
-        input_layer = BatchNormalization(input_shape=(self.input_size, self.input_size, 3))
+        input_layer = Input(shape=(self.input_size, self.input_size, 3))
+        prev = BatchNormalization()(input_layer)
 
-        prev = Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(input_layer)
+        prev = Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
-        prev = MaxPooling2D(pool_size=(2, 2))(prev)
+        prev = MaxPool2D(pool_size=(2, 2))(prev)
 
         prev = Conv2D(64, (3, 3), kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
-        prev = MaxPooling2D(pool_size=(2, 2))(prev)
+        prev = MaxPool2D(pool_size=(2, 2))(prev)
 
         prev = Conv2D(128, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
-        prev = MaxPooling2D(pool_size=(2, 2))(prev)
+        prev = MaxPool2D(pool_size=(2, 2))(prev)
 
         prev = Conv2D(32, kernel_size=(3, 3), kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
-        prev = MaxPooling2D(pool_size=(2, 2))(prev)
+        prev = MaxPool2D(pool_size=(2, 2))(prev)
 
         prev = GlobalMaxPooling2D()(prev)
 
