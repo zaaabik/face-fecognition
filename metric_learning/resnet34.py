@@ -1,4 +1,6 @@
+from keras import Sequential
 from keras.applications.resnet50 import ResNet50
+from keras.layers import MaxPooling2D, GlobalMaxPooling2D
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
@@ -9,12 +11,12 @@ from tensorflow.python.keras.regularizers import l2
 
 
 class Resnet34:
-    def __init__(self, kernel_regularization, bias_regularization, input_size, output_size, drop=0., app=False):
+    def __init__(self, kernel_regularization, bias_regularization, input_size, output_size, drop=0., arch='resnet'):
         self.kernel_regularization = l2(kernel_regularization)
         self.bias_regularization = l2(bias_regularization)
         self.input_size = input_size
         self.output_size = output_size
-        self.app = app
+        self.arch = arch
         self.drop = drop
 
     def conv_block(self, feat_maps_out, prev, strides):
@@ -84,22 +86,54 @@ class Resnet34:
         return prev
 
     def create_model(self):
-        if self.app:
+        if self.arch == 'app':
+            print('app')
             resnet = ResNet50(classes=128, pooling='max', input_shape=(128, 128, 3), weights=None)
             return resnet
+        elif self.arch == 'resnet':
+            print('resnet')
+            image_input = Input(shape=(self.input_size, self.input_size, 3))
+            prev = Conv2D(37, (7, 7), (2, 2), kernel_initializer='he_normal')(image_input)
+            prev = Activation('relu')(prev)
+            prev = BatchNormalization()(prev)
+            prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
 
-        image_input = Input(shape=(self.input_size, self.input_size, 3))
-        prev = Conv2D(37, (7, 7), (2, 2), kernel_initializer='he_normal')(image_input)
-        prev = Activation('relu')(prev)
-        prev = BatchNormalization()(prev)
-        prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
+            # prev = self.level4(prev)
+            # prev = self.level3(prev)
+            # prev = self.level2(prev)
+            # prev = self.level1(prev)
+            prev = self.level0(prev)
+            prev = GlobalAveragePooling2D()(prev)
+            output = Dense(self.output_size, use_bias=False)(prev)
+            output = Dropout(self.drop)(output)
+            return Model(image_input, output)
+        elif self.arch == 'test':
+            print('test')
+            return self.__test_model()
 
-        # prev = self.level4(prev)
-        # prev = self.level3(prev)
-        # prev = self.level2(prev)
-        # prev = self.level1(prev)
-        prev = self.level0(prev)
-        prev = GlobalAveragePooling2D()(prev)
-        output = Dense(self.output_size, use_bias=False)(prev)
-        output = Dropout(self.drop)(output)
-        return Model(image_input, output)
+    def __test_model(self):
+        model = Sequential()
+
+        model.add(BatchNormalization(input_shape=(self.input_size, self.input_size, 3)))
+
+        model.add(Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal'))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Conv2D(64, (3, 3), kernel_initializer='he_normal'))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Conv2D(128, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal'))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Conv2D(32, kernel_size=(3, 3), kernel_initializer='he_normal'))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(GlobalMaxPooling2D())
+
+        model.add(Dense(self.output_size, use_bias=False))  # 512
+        model.add(Activation('relu'))
+        return model

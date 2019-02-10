@@ -36,7 +36,7 @@ parser.add_option('--alpha', type='float')
 parser.add_option('--generator', action='store_true', dest='fit_generator')
 parser.add_option('--aug', action='store_true', dest='aug', default=False)
 parser.add_option('--sgd', action='store_true', dest='sgd')
-parser.add_option('--app', action='store_true', dest='app')
+parser.add_option('--arch', default='resnet')
 parser.add_option('--prev_weights', type='string')
 parser.add_option('--weights', type='string')
 parser.add_option('--mode', type='string')
@@ -56,7 +56,7 @@ alpha = options.alpha
 fit_generator = options.fit_generator
 kernel_regularization = options.k_r
 bias_regularization = options.b_r
-app = options.app
+arch = options.arch
 sgd = options.sgd
 aug = options.aug
 drop = options.drop
@@ -84,7 +84,7 @@ def step_decay(epoch):
 
 
 def create_resnet():
-    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, drop=drop, app=app)
+    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, drop=drop, app=arch)
     return resnet.create_model()
 
 
