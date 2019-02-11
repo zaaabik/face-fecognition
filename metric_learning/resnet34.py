@@ -1,4 +1,5 @@
 from keras.applications.resnet50 import ResNet50
+from keras.layers import Flatten
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
@@ -91,16 +92,21 @@ class Resnet34:
         elif self.arch == 'resnet':
             print('resnet')
             image_input = Input(shape=(self.input_size, self.input_size, 3))
-            prev = Conv2D(37, (7, 7), (2, 2), kernel_initializer='he_normal')(image_input)
+            prev = Conv2D(20, (5, 5), (2, 2), kernel_initializer='he_normal')(image_input)
             prev = Activation('relu')(prev)
             prev = BatchNormalization()(prev)
             prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
+            prev = Conv2D(40, (5, 5), (2, 2), kernel_initializer='he_normal')(prev)
+            prev = Activation('relu')(prev)
+            prev = BatchNormalization()(prev)
+            prev = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(prev)
+            prev = Flatten()(prev)
 
             # prev = self.level4(prev)
             # prev = self.level3(prev)
             # prev = self.level2(prev)
             # prev = self.level1(prev)
-            prev = self.level0(prev)
+            # prev = self.level0(prev)
             prev = GlobalAveragePooling2D()(prev)
             output = Dense(self.output_size, use_bias=False)(prev)
             output = Dropout(self.drop)(output)
