@@ -99,7 +99,11 @@ class Resnet34:
             prev = Activation('relu')(prev)
             prev = BatchNormalization()(prev)
             prev = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(prev)
-            prev = Flatten()(prev)
+
+            prev = Conv2D(60, (5, 5), (2, 2), kernel_initializer='he_normal')(prev)
+            prev = Activation('relu')(prev)
+            prev = BatchNormalization()(prev)
+            prev = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(prev)
 
             # prev = self.level4(prev)
             # prev = self.level3(prev)
