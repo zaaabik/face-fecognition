@@ -1,10 +1,9 @@
 from keras.applications.resnet50 import ResNet50
-from keras.layers import Flatten
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout
+    GlobalAveragePooling2D, Dropout, Flatten
 from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
 
