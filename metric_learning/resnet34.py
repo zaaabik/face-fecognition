@@ -9,7 +9,7 @@ from tensorflow.python.keras.regularizers import l2
 
 import tensorflow.keras.backend as k
 
-
+default_drop = 0.3
 class Resnet34:
     def __init__(self, kernel_regularization, bias_regularization, input_size, output_size, drop=0., arch='resnet'):
         self.kernel_regularization = l2(kernel_regularization)
@@ -99,13 +99,13 @@ class Resnet34:
             prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
 
             prev = self.level4(prev)
-            prev = Dropout(0.25)(prev)
+            prev = Dropout(default_drop)(prev)
             prev = self.level3(prev)
-            prev = Dropout(0.25)(prev)
+            prev = Dropout(default_drop)(prev)
             # prev = self.level2(prev)
             # prev = self.level1(prev)
             prev = self.level0(prev)
-            prev = Dropout(0.25)(prev)
+            prev = Dropout(default_drop)(prev)
             prev = GlobalAveragePooling2D()(prev)
             output = Dense(self.output_size, use_bias=False)(prev)
             output = Lambda(lambda x: k.l2_normalize(x))(output)
