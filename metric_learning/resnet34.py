@@ -3,9 +3,11 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout
+    GlobalAveragePooling2D, Dropout, Lambda
 from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
+
+import tensorflow.keras.backend as k
 
 
 class Resnet34:
@@ -96,14 +98,17 @@ class Resnet34:
             prev = BatchNormalization()(prev)
             prev = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(prev)
 
-            # prev = self.level4(prev)
-            # prev = self.level3(prev)
+            prev = self.level4(prev)
+            prev = Dropout(0.25)(prev)
+            prev = self.level3(prev)
+            prev = Dropout(0.25)(prev)
             # prev = self.level2(prev)
             # prev = self.level1(prev)
             prev = self.level0(prev)
+            prev = Dropout(0.25)(prev)
             prev = GlobalAveragePooling2D()(prev)
             output = Dense(self.output_size, use_bias=False)(prev)
-            output = Dropout(self.drop)(output)
+            output = Lambda(lambda x: k.l2_normalize(x))(output)
             return Model(image_input, output)
         elif self.arch == 'test':
             print('test')
