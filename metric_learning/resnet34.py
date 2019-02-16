@@ -108,7 +108,6 @@ class Resnet34:
             prev = Dropout(default_drop)(prev)
             prev = GlobalAveragePooling2D()(prev)
             output = Dense(self.output_size, use_bias=False)(prev)
-            output = Lambda(lambda x: k.l2_normalize(x))(output)
             return Model(image_input, output)
         elif self.arch == 'test':
             print('test')
@@ -116,9 +115,8 @@ class Resnet34:
 
     def __test_model(self):
         input_layer = Input(shape=(self.input_size, self.input_size, 3))
-        prev = BatchNormalization()(input_layer)
 
-        prev = Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(prev)
+        prev = Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(input_layer)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
@@ -136,6 +134,5 @@ class Resnet34:
 
         prev = GlobalAveragePooling2D()(prev)
 
-        prev = Dense(self.output_size)(prev)
-        prev = Activation('relu')(prev)
+        prev = Dense(self.output_size, use_bias=False)(prev)
         return Model(input_layer, prev)
