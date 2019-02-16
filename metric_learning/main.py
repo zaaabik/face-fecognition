@@ -10,10 +10,10 @@ from skimage.transform import resize
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Layer, Input
+from tensorflow.keras.layers import Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
-from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Dense, Embedding, Lambda
 from tensorflow.python.keras.utils import to_categorical
 
 from metric_learning.generator import Generator
@@ -61,6 +61,7 @@ sgd = options.sgd
 aug = options.aug
 drop = options.drop
 
+
 def get_images(files):
     images = []
     for file in files:
@@ -88,49 +89,20 @@ def create_resnet():
     return resnet.create_model()
 
 
-class CenterLossLayer(Layer):
-
-    def __init__(self, alpha=0.5, **kwargs):
-        super().__init__(**kwargs)
-        self.alpha = alpha
-
-    def build(self, input_shape):
-        self.centers = self.add_weight(name='centers',
-                                       shape=(class_name_max, output_len),
-                                       initializer='uniform',
-                                       trainable=False)
-        super().build(input_shape)
-
-    def call(self, x, mask=None):
-        delta_centers = K.dot(K.transpose(x[1]), (K.dot(x[1], self.centers) - x[0]))
-        center_counts = K.sum(K.transpose(x[1]), axis=1, keepdims=True) + 1
-        delta_centers /= center_counts
-        new_centers = self.centers - self.alpha * delta_centers
-        self.add_update((self.centers, new_centers), x)
-        self.result = x[0] - K.dot(x[1], self.centers)
-        self.result = K.sum(self.result ** 2, axis=1, keepdims=True)
-        return self.result
-
-    def compute_output_shape(self, input_shape):
-        return K.int_shape(self.result)
-
-
-def zero_loss(y_true, y_pred):
-    return 0.5 * K.sum(y_pred, axis=0)
-
-
 def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
     main = Dense(class_name_max, activation='softmax', name='main_out')(resnet.output)
-    side = CenterLossLayer(alpha=alpha, name='centerlosslayer')([resnet.output, aux_input])
+    centers = Embedding(class_name_max, output_len)
+    l2_loss = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='l2_loss')(
+        [resnet.output, centers])
 
-    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
+    model = Model(inputs=[resnet.input, aux_input], outputs=[main, l2_loss])
     optim = optimizers.Adam(lr=lr)
     if sgd:
         optim = optimizers.SGD(lr=lr, momentum=0.9)
     model.compile(optimizer=optim,
-                  loss=[losses.categorical_crossentropy, zero_loss],
+                  loss=[losses.categorical_crossentropy, lambda y_true, y_pred: y_pred],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
 
     all_files, all_labels = get_files(options.dataset)
