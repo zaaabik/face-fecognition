@@ -8,7 +8,7 @@ from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
 
 default_drop = 0.3
-default_kernel_size = 5
+default_kernel_size = 3
 
 
 class Resnet34:
