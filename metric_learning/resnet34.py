@@ -123,18 +123,18 @@ class Resnet34:
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(64, (default_kernel_size, default_kernel_size), kernel_regularizer=self.kernel_regularization,
+        prev = Conv2D(40, (default_kernel_size, default_kernel_size), kernel_regularizer=self.kernel_regularization,
                       kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(128, kernel_size=(default_kernel_size, default_kernel_size), padding='same',
+        prev = Conv2D(80, kernel_size=(default_kernel_size, default_kernel_size), padding='same',
                       kernel_regularizer=self.kernel_regularization,
                       kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(default_kernel_size, default_kernel_size))(prev)
 
-        prev = Conv2D(64, kernel_size=(default_kernel_size, default_kernel_size),
+        prev = Conv2D(40, kernel_size=(default_kernel_size, default_kernel_size),
                       kernel_regularizer=self.kernel_regularization, kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
