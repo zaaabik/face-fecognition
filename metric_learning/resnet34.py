@@ -128,6 +128,10 @@ class Resnet34:
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
+        prev = Conv2D(64, kernel_size=(3, 3), kernel_initializer='he_normal')(prev)
+        prev = Activation('relu')(prev)
+        prev = MaxPool2D(pool_size=(2, 2))(prev)
+
         prev = Conv2D(32, kernel_size=(3, 3), kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
