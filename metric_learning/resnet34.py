@@ -3,13 +3,14 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout, Lambda
+    GlobalAveragePooling2D, Dropout
 from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
 
-import tensorflow.keras.backend as k
-
 default_drop = 0.3
+default_kernel_size = 5
+
+
 class Resnet34:
     def __init__(self, kernel_regularization, bias_regularization, input_size, output_size, drop=0., arch='resnet'):
         self.kernel_regularization = l2(kernel_regularization)
@@ -116,23 +117,23 @@ class Resnet34:
     def __test_model(self):
         input_layer = Input(shape=(self.input_size, self.input_size, 3))
 
-        prev = Conv2D(32, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(input_layer)
+        prev = Conv2D(32, kernel_size=(default_kernel_size, default_kernel_size), padding='same', kernel_initializer='he_normal')(input_layer)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(64, (3, 3), kernel_initializer='he_normal')(prev)
+        prev = Conv2D(64, (default_kernel_size, default_kernel_size), kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(128, kernel_size=(3, 3), padding='same', kernel_initializer='he_normal')(prev)
+        prev = Conv2D(128, kernel_size=(default_kernel_size, default_kernel_size), padding='same', kernel_initializer='he_normal')(prev)
+        prev = Activation('relu')(prev)
+        prev = MaxPool2D(pool_size=(default_kernel_size, default_kernel_size))(prev)
+
+        prev = Conv2D(64, kernel_size=(default_kernel_size, default_kernel_size), kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(64, kernel_size=(3, 3), kernel_initializer='he_normal')(prev)
-        prev = Activation('relu')(prev)
-        prev = MaxPool2D(pool_size=(2, 2))(prev)
-
-        prev = Conv2D(32, kernel_size=(3, 3), kernel_initializer='he_normal')(prev)
+        prev = Conv2D(32, kernel_size=(default_kernel_size, default_kernel_size), kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
