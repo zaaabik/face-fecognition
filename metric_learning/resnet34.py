@@ -3,7 +3,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout
+    GlobalAveragePooling2D, Dropout, Flatten
 from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
 
@@ -144,7 +144,9 @@ class Resnet34:
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = GlobalAveragePooling2D()(prev)
+        prev = Flatten()(prev)
+        prev = Dense(3000)(prev)
+        prev = Dense(500)(prev)
 
         prev = Dense(self.output_size, use_bias=False)(prev)
         return Model(input_layer, prev)
