@@ -117,29 +117,29 @@ class Resnet34:
     def __test_model(self):
         input_layer = Input(shape=(self.input_size, self.input_size, 3))
 
-        prev = Conv2D(32, kernel_size=(default_kernel_size, default_kernel_size),
+        prev = Conv2D(64, kernel_size=(default_kernel_size, default_kernel_size),
                       kernel_regularizer=self.kernel_regularization, padding='same', kernel_initializer='he_normal')(
             input_layer)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(64, (default_kernel_size, default_kernel_size), kernel_regularizer=self.kernel_regularization,
+        prev = Conv2D(128, (default_kernel_size, default_kernel_size), kernel_regularizer=self.kernel_regularization,
                       kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(128, kernel_size=(default_kernel_size, default_kernel_size), padding='same',
+        prev = Conv2D(256, kernel_size=(default_kernel_size, default_kernel_size), padding='same',
                       kernel_regularizer=self.kernel_regularization,
                       kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(default_kernel_size, default_kernel_size))(prev)
 
-        prev = Conv2D(64, kernel_size=(default_kernel_size, default_kernel_size),
+        prev = Conv2D(128, kernel_size=(default_kernel_size, default_kernel_size),
                       kernel_regularizer=self.kernel_regularization, kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
 
-        prev = Conv2D(32, kernel_size=(default_kernel_size, default_kernel_size),
+        prev = Conv2D(64, kernel_size=(default_kernel_size, default_kernel_size),
                       kernel_regularizer=self.kernel_regularization, kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
