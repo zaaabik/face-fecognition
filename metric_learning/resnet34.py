@@ -143,10 +143,13 @@ class Resnet34:
                       kernel_regularizer=self.kernel_regularization, kernel_initializer='he_normal')(prev)
         prev = Activation('relu')(prev)
         prev = MaxPool2D(pool_size=(2, 2))(prev)
+        # prev = Dropout(default_drop)(prev)
 
         prev = Flatten()(prev)
         prev = Dense(3000)(prev)
         prev = Dense(500)(prev)
+
+        # prev = GlobalAveragePooling2D()(prev)
 
         prev = Dense(self.output_size, use_bias=False)(prev)
         return Model(input_layer, prev)
