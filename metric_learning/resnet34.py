@@ -3,7 +3,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout, ZeroPadding2D, MaxPooling2D, Flatten
+    GlobalAveragePooling2D, Dropout, ZeroPadding2D, MaxPooling2D
 from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
 
@@ -117,7 +117,7 @@ class Resnet34:
     def __test_model(self):
         img_input = Input(shape=(self.input_size, self.input_size, 3))
         x = ZeroPadding2D(padding=(3, 3), name='conv1_pad')(img_input)
-        x = Conv2D(64, (7, 7),
+        x = Conv2D(32, (5, 5),
                    strides=(2, 2),
                    padding='valid',
                    kernel_initializer='he_normal',
@@ -126,11 +126,19 @@ class Resnet34:
         x = Activation('relu')(x)
         x = ZeroPadding2D(padding=(1, 1), name='pool1_pad')(x)
         x = MaxPooling2D((3, 3), strides=(2, 2))(x)
+        x = Dropout(default_drop)(x)
 
-        x = conv_block(x, 3, [64, 64, 256], stage=2, block='a', strides=(1, 1))
-        x = identity_block(x, 3, [64, 64, 256], stage=2, block='b')
-        x = identity_block(x, 3, [64, 64, 256], stage=2, block='c')
-        x = Flatten()(x)
+        x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1))
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='b')
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='c')
+        x = Dropout(default_drop)(x)
+
+        x = conv_block(x, 3, [16, 16, 64], stage=3, block='a', strides=(1, 1))
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='b')
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='c')
+        x = Dropout(default_drop)(x)
+
+        x = GlobalAveragePooling2D()(x)
         x = Dense(self.output_size, use_bias=False)(x)
         return Model(img_input, x)
 
