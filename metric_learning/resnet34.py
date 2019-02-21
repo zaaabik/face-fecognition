@@ -1,5 +1,5 @@
 from keras.applications.resnet50 import ResNet50
-from keras.layers.advanced_activations import PReLU
+from tensorflow.python.keras.layers.advanced_activations import PReLU
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
@@ -262,38 +262,39 @@ class Resnet34:
         x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same',
                    kernel_regularizer=self.kernel_regularization)(
             img_input)
-        x = PReLU(x)
+        x = PReLU()(x)
         x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same',
                    kernel_regularizer=self.kernel_regularization)(
             x)
-        x = PReLU(x)
+        x = PReLU()(x)
         x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
         #
         x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same',
                    kernel_regularizer=self.kernel_regularization)(
             x)
-        x = PReLU(x)
+        x = PReLU()(x)
         x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same',
                    kernel_regularizer=self.kernel_regularization)(
             x)
-        x = PReLU(x)
+        x = PReLU()(x)
         x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
         #
         x = Conv2D(filters=128, kernel_size=(5, 5), strides=(1, 1), padding='same',
                    kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU(x)
+        x = PReLU()(x)
         x = Conv2D(filters=128, kernel_size=(5, 5), strides=(1, 1), padding='same',
                    kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU(x)
+        x = PReLU()(x)
         x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
         #
         x = Flatten()(x)
         x = Dropout(self.drop)(x)
         x = Dense(self.output_size, kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU(x, name='side_out')
+        x = PReLU()(x)
         return Model(img_input, x)
 
     def __test_model3(self):
         model = ResNet18((self.input_size, self.input_size, 3), 128, dropout=self.drop)
         x = Dense(self.output_size)(model.output)
+        x = PReLU()(x)
         return Model(model.input, x)
