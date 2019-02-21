@@ -122,7 +122,7 @@ def zero_loss(y_true, y_pred):
 def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
-    main = Dropout(0.5)(resnet.output)
+    main = Dropout(drop)(resnet.output)
     main = Dense(class_name_max, activation='softmax', name='main_out')(main)
     side = CenterLossLayer(alpha=alpha, name='centerlosslayer')([resnet.output, aux_input])
 
