@@ -16,7 +16,8 @@ def conv_block(input_tensor,
                filters,
                stage,
                block,
-               strides=(2, 2)):
+               strides=(2, 2),
+               norm=None):
     """A block that has a conv layer at shortcut.
 
     # Arguments
@@ -42,12 +43,14 @@ def conv_block(input_tensor,
 
     x = Conv2D(filters1, (1, 1), strides=strides,
                kernel_initializer='he_normal',
+               kernel_regularizer=norm,
                name=conv_name_base + '2a')(input_tensor)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters2, kernel_size, padding='same',
                kernel_initializer='he_normal',
+               kernel_regularizer=norm,
                name=conv_name_base + '2b')(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')(x)
     x = Activation('relu')(x)
@@ -59,6 +62,7 @@ def conv_block(input_tensor,
 
     shortcut = Conv2D(filters3, (1, 1), strides=strides,
                       kernel_initializer='he_normal',
+                      kernel_regularizer=norm,
                       name=conv_name_base + '1')(input_tensor)
     shortcut = BatchNormalization(
         axis=bn_axis, name=bn_name_base + '1')(shortcut)
@@ -68,7 +72,7 @@ def conv_block(input_tensor,
     return x
 
 
-def identity_block(input_tensor, kernel_size, filters, stage, block):
+def identity_block(input_tensor, kernel_size, filters, stage, block, norm):
     """The identity block is the block that has no conv layer at shortcut.
 
     # Arguments
@@ -89,6 +93,7 @@ def identity_block(input_tensor, kernel_size, filters, stage, block):
 
     x = Conv2D(filters1, (1, 1),
                kernel_initializer='he_normal',
+               kernel_regularizer=norm,
                name=conv_name_base + '2a')(input_tensor)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
     x = Activation('relu')(x)
@@ -102,6 +107,7 @@ def identity_block(input_tensor, kernel_size, filters, stage, block):
 
     x = Conv2D(filters3, (1, 1),
                kernel_initializer='he_normal',
+               kernel_regularizer=norm,
                name=conv_name_base + '2c')(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
 
@@ -227,14 +233,14 @@ class Resnet34:
         x = MaxPooling2D((3, 3), strides=(2, 2))(x)
         x = Dropout(default_drop)(x)
 
-        x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1))
-        x = identity_block(x, 3, [16, 16, 64], stage=2, block='b')
-        x = identity_block(x, 3, [16, 16, 64], stage=2, block='c')
+        x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1), norm=self.kernel_regularization)
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='b', norm=self.kernel_regularization)
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='c', norm=self.kernel_regularization)
         x = Dropout(default_drop)(x)
 
         x = conv_block(x, 3, [16, 16, 64], stage=3, block='a', strides=(1, 1))
-        x = identity_block(x, 3, [16, 16, 64], stage=3, block='b')
-        x = identity_block(x, 3, [16, 16, 64], stage=3, block='c')
+        x = identity_block(x, 3, [16, 16, 64], stage=3, block='b', norm=self.kernel_regularization)
+        x = identity_block(x, 3, [16, 16, 64], stage=3, block='c', norm=self.kernel_regularization)
         x = Dropout(default_drop)(x)
 
         x = GlobalAveragePooling2D()(x)
