@@ -34,6 +34,8 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.python.keras.layers import add, BatchNormalization
 
 
+
+
 def _bn_relu(x, bn_name=None, relu_name=None):
     """Helper to build a BN -> relu block
     """

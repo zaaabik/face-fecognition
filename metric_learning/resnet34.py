@@ -1,4 +1,5 @@
 from keras.applications.resnet50 import ResNet50
+from keras.layers.advanced_activations import PReLU
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
@@ -258,16 +259,38 @@ class Resnet34:
 
     def __test_model2(self):
         img_input = Input(shape=(self.input_size, self.input_size, 3))
-        x = Conv2D(64, 3, 3, activation='relu', name='conv1_1')(img_input)
-        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
-
-        x = Conv2D(128, 3, 3, activation='relu', name='conv2_1')(x)
-        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
-
+        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same',
+                   kernel_regularizer=self.kernel_regularization)(
+            img_input)
+        x = PReLU(x)
+        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same',
+                   kernel_regularizer=self.kernel_regularization)(
+            x)
+        x = PReLU(x)
+        x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
+        #
+        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same',
+                   kernel_regularizer=self.kernel_regularization)(
+            x)
+        x = PReLU(x)
+        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same',
+                   kernel_regularizer=self.kernel_regularization)(
+            x)
+        x = PReLU(x)
+        x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
+        #
+        x = Conv2D(filters=128, kernel_size=(5, 5), strides=(1, 1), padding='same',
+                   kernel_regularizer=self.kernel_regularization)(x)
+        x = PReLU(x)
+        x = Conv2D(filters=128, kernel_size=(5, 5), strides=(1, 1), padding='same',
+                   kernel_regularizer=self.kernel_regularization)(x)
+        x = PReLU(x)
+        x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
+        #
         x = Flatten()(x)
-        x = Dense(4096, activation='relu', name='fc6')(x)
-        x = Dropout(0.5)(x)
-        x = Dense(4096, activation='relu', name='fc7')(x)
+        x = Dropout(self.drop)(x)
+        x = Dense(self.output_size, kernel_regularizer=self.kernel_regularization)(x)
+        x = PReLU(x, name='side_out')
         return Model(img_input, x)
 
     def __test_model3(self):
