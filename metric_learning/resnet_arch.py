@@ -18,20 +18,20 @@ Implementation Adapted from: github.com/raghakot/keras-resnet
 from __future__ import division
 
 import six
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import Reshape
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.layers import GlobalMaxPooling2D
-from tensorflow.keras.layers import GlobalAveragePooling2D
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.regularizers import l2
-from tensorflow.python.keras.layers import add, AvgPool2D, BatchNormalization
-from tensorflow.keras import backend as K
 from keras_applications.imagenet_utils import _obtain_input_shape
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import GlobalAveragePooling2D
+from tensorflow.keras.layers import GlobalMaxPooling2D
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import MaxPooling2D
+from tensorflow.keras.layers import Reshape
+from tensorflow.keras.models import Model
+from tensorflow.keras.regularizers import l2
+from tensorflow.python.keras.layers import add, BatchNormalization
 
 
 def _bn_relu(x, bn_name=None, relu_name=None):
@@ -183,6 +183,7 @@ def basic_block(filters, stage, block, transition_strides=(1, 1),
     """Basic 3 X 3 convolution blocks for use on resnets with layers <= 34.
     Follows improved proposed scheme in http://arxiv.org/pdf/1603.05027v2.pdf
     """
+
     def f(input_features):
         conv_name_base, bn_name_base = _block_name_base(stage, block)
         if is_first_block_of_first_layer:
@@ -222,6 +223,7 @@ def bottleneck(filters, stage, block, transition_strides=(1, 1),
     Returns:
         A final conv layer of filters * 4
     """
+
     def f(input_feature):
         conv_name_base, bn_name_base = _block_name_base(stage, block)
         if is_first_block_of_first_layer:
@@ -436,7 +438,8 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
 def ResNet18(input_shape, classes, dropout=None):
     """ResNet with 18 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2], dropout=dropout)
+    return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2], dropout=dropout, top='asda',
+                  final_pooling='avg', initial_kernel_size=(5, 5))
 
 
 def ResNet34(input_shape, classes):
