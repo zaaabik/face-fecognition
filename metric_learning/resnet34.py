@@ -236,11 +236,13 @@ class Resnet34:
         x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1), norm=self.kernel_regularization)
         x = identity_block(x, 3, [16, 16, 64], stage=2, block='b', norm=self.kernel_regularization)
         x = identity_block(x, 3, [16, 16, 64], stage=2, block='c', norm=self.kernel_regularization)
+        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
         x = Dropout(default_drop)(x)
 
         x = conv_block(x, 3, [16, 16, 64], stage=3, block='a', strides=(1, 1))
         x = identity_block(x, 3, [16, 16, 64], stage=3, block='b', norm=self.kernel_regularization)
         x = identity_block(x, 3, [16, 16, 64], stage=3, block='c', norm=self.kernel_regularization)
+        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
         x = Dropout(default_drop)(x)
 
         x = GlobalAveragePooling2D()(x)
