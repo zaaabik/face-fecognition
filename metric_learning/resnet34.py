@@ -271,4 +271,6 @@ class Resnet34:
         return Model(img_input, x)
 
     def __test_model3(self):
-        return ResNet18((self.input_size, self.input_size, 3), 128, dropout=self.drop)
+        model = ResNet18((self.input_size, self.input_size, 3), 128, dropout=self.drop)
+        x = Dense(self.output_size)(model.output)
+        return Model(model.input, x)
