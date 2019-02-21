@@ -33,7 +33,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 from tensorflow.python.keras.layers import add, BatchNormalization
 
-
+nor = l2(1e-2)
 
 
 def _bn_relu(x, bn_name=None, relu_name=None):
@@ -56,14 +56,14 @@ def _conv_bn_relu(**conv_params):
     relu_name = conv_params.setdefault("relu_name", None)
     kernel_initializer = conv_params.setdefault("kernel_initializer", "he_normal")
     padding = conv_params.setdefault("padding", "same")
-    kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4))
+    kernel_regularizer = conv_params.setdefault("kernel_regularizer", nor)
 
     def f(x):
         x = Conv2D(filters=filters, kernel_size=kernel_size,
                    strides=strides, padding=padding,
                    dilation_rate=dilation_rate,
                    kernel_initializer=kernel_initializer,
-                   kernel_regularizer=kernel_regularizer,
+                   kernel_regularizer=nor,
                    name=conv_name)(x)
         return _bn_relu(x, bn_name=bn_name, relu_name=relu_name)
 
@@ -84,7 +84,7 @@ def _bn_relu_conv(**conv_params):
     relu_name = conv_params.setdefault("relu_name", None)
     kernel_initializer = conv_params.setdefault("kernel_initializer", "he_normal")
     padding = conv_params.setdefault("padding", "same")
-    kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4))
+    kernel_regularizer = conv_params.setdefault("kernel_regularizer", nor)
 
     def f(x):
         activation = _bn_relu(x, bn_name=bn_name, relu_name=relu_name)
@@ -92,7 +92,7 @@ def _bn_relu_conv(**conv_params):
                       strides=strides, padding=padding,
                       dilation_rate=dilation_rate,
                       kernel_initializer=kernel_initializer,
-                      kernel_regularizer=kernel_regularizer,
+                      kernel_regularizer=nor,
                       name=conv_name)(activation)
 
     return f
@@ -121,7 +121,7 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None):
                           strides=(stride_width, stride_height),
                           padding="valid",
                           kernel_initializer="he_normal",
-                          kernel_regularizer=l2(0.0001),
+                          kernel_regularizer=nor,
                           name=conv_name_base)(input_feature)
         if bn_name_base is not None:
             bn_name_base = bn_name_base + '1'

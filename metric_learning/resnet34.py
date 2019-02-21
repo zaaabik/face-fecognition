@@ -1,10 +1,10 @@
 from keras.applications.resnet50 import ResNet50
-from tensorflow.python.keras.layers.advanced_activations import PReLU
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D, Dropout, ZeroPadding2D, MaxPooling2D, Flatten
 from tensorflow.python.keras.layers import add, AvgPool2D
+from tensorflow.python.keras.layers.advanced_activations import PReLU
 from tensorflow.python.keras.regularizers import l2
 
 from metric_learning.resnet_arch import ResNet18
@@ -259,23 +259,19 @@ class Resnet34:
 
     def __test_model2(self):
         img_input = Input(shape=(self.input_size, self.input_size, 3))
-        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same',
-                   kernel_regularizer=self.kernel_regularization)(
-            img_input)
+        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
+                   kernel_regularizer=self.kernel_regularization)(img_input)
         x = PReLU()(x)
-        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same',
-                   kernel_regularizer=self.kernel_regularization)(
-            x)
+        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
+                   kernel_regularizer=self.kernel_regularization)(x)
         x = PReLU()(x)
         x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
         #
-        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same',
-                   kernel_regularizer=self.kernel_regularization)(
-            x)
+        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
+                   kernel_regularizer=self.kernel_regularization)(x)
         x = PReLU()(x)
-        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same',
-                   kernel_regularizer=self.kernel_regularization)(
-            x)
+        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
+                   kernel_regularizer=self.kernel_regularization)(x)
         x = PReLU()(x)
         x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
         #
