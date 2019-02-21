@@ -7,6 +7,8 @@ from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormal
 from tensorflow.python.keras.layers import add, AvgPool2D
 from tensorflow.python.keras.regularizers import l2
 
+from metric_learning.resnet_arch import ResNet18
+
 default_drop = 0.3
 default_kernel_size = 3
 
@@ -221,6 +223,9 @@ class Resnet34:
         elif self.arch == 'test2':
             print('test2')
             return self.__test_model2()
+        elif self.arch == 'test3':
+            print('test3')
+            return self.__test_model3()
 
     def __test_model(self):
         img_input = Input(shape=(self.input_size, self.input_size, 3))
@@ -255,38 +260,16 @@ class Resnet34:
     def __test_model2(self):
         img_input = Input(shape=(self.input_size, self.input_size, 3))
         x = Conv2D(64, 3, 3, activation='relu', name='conv1_1')(img_input)
-        #x = Conv2D(64, 3, 3, activation='relu', name='conv1_2')(x)
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
         x = Conv2D(128, 3, 3, activation='relu', name='conv2_1')(x)
-        #x = Conv2D(128, 3, 3, activation='relu', name='conv2_2')(x)
-        pool2 = MaxPooling2D((2, 2), strides=(2, 2))(x)
-
-        # pad3_1 = ZeroPadding2D((1, 1))(pool2)
-        # conv3_1 = Conv2D(256, 3, 3, activation='relu', name='conv3_1')(pad3_1)
-        # pad3_2 = ZeroPadding2D((1, 1))(conv3_1)
-        # conv3_2 = Conv2D(256, 3, 3, activation='relu', name='conv3_2')(pad3_2)
-        # pad3_3 = ZeroPadding2D((1, 1))(conv3_2)
-        # conv3_3 = Conv2D(256, 3, 3, activation='relu', name='conv3_3')(pad3_3)
-        # pool3 = MaxPooling2D((2, 2), strides=(2, 2))(conv3_3)
-        #
-        # pad4_1 = ZeroPadding2D((1, 1))(pool3)
-        # conv4_1 = Conv2D(512, 3, 3, activation='relu', name='conv4_1')(pad4_1)
-        # pad4_2 = ZeroPadding2D((1, 1))(conv4_1)
-        # conv4_2 = Conv2D(512, 3, 3, activation='relu', name='conv4_2')(pad4_2)
-        # pad4_3 = ZeroPadding2D((1, 1))(conv4_2)
-        # conv4_3 = Conv2D(512, 3, 3, activation='relu', name='conv4_3')(pad4_3)
-        # pool4 = MaxPooling2D((2, 2), strides=(2, 2))(conv4_3)
-
-        x = Conv2D(512, 3, 3, activation='relu', name='conv5_1')(x)
-        # x = Conv2D(512, 3, 3, activation='relu', name='conv5_2')(x)
-        # x = Conv2D(512, 3, 3, activation='relu', name='conv5_3')(x)
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
-        flat = Flatten()(x)
-        fc6 = Dense(4096, activation='relu', name='fc6')(flat)
-        fc6_drop = Dropout(0.5)(fc6)
-        fc7 = Dense(4096, activation='relu', name='fc7')(fc6_drop)
-        fc7_drop = Dropout(0.5)(fc7)
-        out = Dense(128, name='fc8')(fc7_drop)
-        return Model(img_input, out)
+        x = Flatten()(x)
+        x = Dense(4096, activation='relu', name='fc6')(x)
+        x = Dropout(0.5)(x)
+        x = Dense(4096, activation='relu', name='fc7')(x)
+        return Model(img_input, x)
+
+    def __test_model3(self):
+        return ResNet18((self.input_size,self.input_size,3), 128)

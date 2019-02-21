@@ -13,7 +13,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
-from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Dense, Dropout
 from tensorflow.python.keras.utils import to_categorical
 
 from metric_learning.generator import Generator
@@ -122,7 +122,8 @@ def zero_loss(y_true, y_pred):
 def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
-    main = Dense(class_name_max, activation='softmax', name='main_out')(resnet.output)
+    main = Dropout(0.5)(resnet.output)
+    main = Dense(class_name_max, activation='softmax', name='main_out')(main)
     side = CenterLossLayer(alpha=alpha, name='centerlosslayer')([resnet.output, aux_input])
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
