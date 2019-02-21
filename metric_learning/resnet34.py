@@ -1,7 +1,6 @@
 from keras.applications.resnet50 import ResNet50
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
-
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D, Dropout, ZeroPadding2D, MaxPooling2D, Flatten
 from tensorflow.python.keras.layers import add, AvgPool2D
@@ -272,4 +271,4 @@ class Resnet34:
         return Model(img_input, x)
 
     def __test_model3(self):
-        return ResNet18((self.input_size,self.input_size,3), 128)
+        return ResNet18((self.input_size, self.input_size, 3), 128, dropout=self.drop)
