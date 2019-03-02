@@ -212,17 +212,6 @@ def find_distance(image_urls):
     for image_url in image_urls:
         image = imread(image_url)
 
-        face_detector = dlib.get_frontal_face_detector()
-        faces = face_detector(image, 1)
-        if len(faces) == 0:
-            continue
-
-        face = faces[0]
-        x = face.left()
-        y = face.top()
-        w = face.right() - x
-        h = face.bottom() - y
-        image = image[abs(y):y + h, abs(x):abs(x) + w]
         image = face_align(image)
         image = np.array(resize(image, (128, 128))) / 255
         images.append(image)
@@ -251,9 +240,10 @@ def face_align(img):
     detector = dlib.get_frontal_face_detector()
 
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    rects = detector(img_gray, 0)
+    rects = detector(img_gray, 2)
     aligned_face = face_aligner.align(img, img_gray, rects[0])
     return aligned_face
+
 
 if __name__ == '__main__':
     print(aug)
