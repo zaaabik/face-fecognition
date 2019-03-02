@@ -4,6 +4,7 @@ import os
 import cv2
 import dlib
 import numpy as np
+from imutils.face_utils import FaceAligner
 from matplotlib import pyplot as plt
 from skimage.io import imread
 from skimage.transform import resize
@@ -60,6 +61,7 @@ arch = options.arch
 sgd = options.sgd
 aug = options.aug
 drop = options.drop
+
 
 def get_images(files):
     images = []
@@ -221,6 +223,7 @@ def find_distance(image_urls):
         w = face.right() - x
         h = face.bottom() - y
         image = image[abs(y):y + h, abs(x):abs(x) + w]
+        image = face_align(image)
         image = np.array(resize(image, (128, 128))) / 255
         images.append(image)
         paths.append(image_url)
@@ -241,6 +244,16 @@ def test_distance(images, paths):
                 dist = np.linalg.norm(inference - inference2)
                 print(f'{idx} {idx2} dist = {dist} {paths[idx]} {paths[idx2]}')
 
+
+def face_align(img):
+    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+    face_aligner = FaceAligner(predictor=predictor, desiredFaceHeight=128, desiredFaceWidth=128)
+    detector = dlib.get_frontal_face_detector()
+
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    rects = detector(img_gray, 0)
+    aligned_face = face_aligner.align(img, img_gray, rects[0])
+    return aligned_face
 
 if __name__ == '__main__':
     print(aug)
