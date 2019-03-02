@@ -1,9 +1,9 @@
 import optparse
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 from skimage.io import imread
-import matplotlib.pyplot as plt
 from skimage.transform import resize
 
 from metric_learning.resnet34 import Resnet34
@@ -12,8 +12,11 @@ parser = optparse.OptionParser()
 parser.add_option('--dataset')
 parser.add_option('--pairs')
 parser.add_option('--weights')
+parser.add_option('--flipped', default=True)
 parser.add_option('--step', type='float')
 (options, args) = parser.parse_args()
+
+flipped = options.flipped
 
 
 def read_pairs_file(path):
@@ -77,8 +80,18 @@ def main():
     second_images = pairs[:, 1]
     first_images = read_images(first_images)
     second_images = read_images(second_images)
+
     first_inferences = resnset.predict(first_images)
     second_inferences = resnset.predict(second_images)
+
+    if flipped:
+        first_images_flipped = np.flip(first_images, 2)
+        second_images_flipped = np.flip(second_images, 2)
+        first_inferences_flipped = resnset.predict(first_images_flipped)
+        second_inferences_flipped = resnset.predict(second_images_flipped)
+        first_inferences = (first_inferences + first_inferences_flipped) / 2
+        second_inferences = (second_inferences + second_inferences_flipped) / 2
+
     distanses = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
     positive = np.array(positive).flatten()
 
