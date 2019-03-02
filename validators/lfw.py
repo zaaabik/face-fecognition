@@ -12,11 +12,13 @@ parser = optparse.OptionParser()
 parser.add_option('--dataset')
 parser.add_option('--pairs')
 parser.add_option('--weights')
+parser.add_option('--arch', default='resnet')
 parser.add_option('--flipped', default=True)
 parser.add_option('--step', type='float')
 (options, args) = parser.parse_args()
 
-flipped = options.flipped
+flipped = bool(options.flipped)
+arch = options.arch
 
 
 def read_pairs_file(path):
@@ -67,7 +69,7 @@ def add_extension(path):
 def main():
     pairs = read_pairs_file(options.pairs)
     pairs, positive = create_pairs(options.dataset, pairs)
-    resnet = Resnet34(0, 0, 128, 128)
+    resnet = Resnet34(0, 0, 128, 128, arch=arch)
     resnset = resnet.create_model()
     if not os.path.exists(options.weights):
         print('can not find weights')
