@@ -13,7 +13,7 @@ parser.add_option('--dataset')
 parser.add_option('--pairs')
 parser.add_option('--weights')
 parser.add_option('--arch', default='resnet')
-parser.add_option('--flipped', default=True)
+parser.add_option('--flipped', default=False)
 parser.add_option('--step', type='float')
 (options, args) = parser.parse_args()
 
