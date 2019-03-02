@@ -33,7 +33,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 from tensorflow.python.keras.layers import add, BatchNormalization
 
-nor = l2(1e-2)
+nor = l2(6e-4)
 
 
 def _bn_relu(x, bn_name=None, relu_name=None):

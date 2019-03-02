@@ -129,7 +129,7 @@ def train_resnet():
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.Adam(lr=lr)
     if sgd:
-        optim = optimizers.SGD(lr=lr, momentum=0.9)
+        optim = optimizers.SGD(lr=lr, momentum=0.9, nesterov=True)
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
