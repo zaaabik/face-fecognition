@@ -23,6 +23,7 @@ def main():
     if not os.path.isdir(out):
         os.mkdir(out)
     for idx, folder in enumerate(folders):
+        print(idx)
         files_path = path + os.path.sep + folder
         files = os.listdir(files_path)
         res_folder = out + os.path.sep + folder
