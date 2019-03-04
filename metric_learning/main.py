@@ -50,7 +50,6 @@ parser.add_option('--pairs', type='string')
 parser.add_option('--filter_idx', type='int', default=None)
 parser.add_option('--lfw', type='string')
 parser.add_option('--drop', type='float', default=0.)
-parser.add_option('--weights')
 
 (options, args) = parser.parse_args()
 
