@@ -5,7 +5,7 @@ import cv2
 import dlib
 import numpy as np
 from imutils.face_utils import FaceAligner
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, cm
 from skimage.io import imread
 from skimage.transform import resize
 from sklearn.model_selection import train_test_split
@@ -16,6 +16,8 @@ from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
 from tensorflow.python.keras.layers import Dense, Dropout
 from tensorflow.python.keras.utils import to_categorical
+from vis.utils import utils
+from vis.visualization import visualize_cam, overlay
 
 from metric_learning.callbacks import ValidateOnLfw
 from metric_learning.generator import Generator
@@ -45,6 +47,7 @@ parser.add_option('--mode', type='string')
 parser.add_option('--urls', type='string')
 parser.add_option('--thr', type='float')
 parser.add_option('--pairs', type='string')
+parser.add_option('--filter_idx', type='int', default=None)
 parser.add_option('--lfw', type='string')
 parser.add_option('--drop', type='float', default=0.)
 
@@ -66,6 +69,34 @@ aug = options.aug
 drop = options.drop
 lfw = options.lfw
 pairs = options.pairs
+filter_idx = options.filter_idx
+
+
+def visualize(image_urls, filter_idx):
+    images = []
+    for image_url in image_urls:
+        image = imread(image_url)
+        image = face_align(image)
+        images.append(image)
+
+    model = create_metric_resnet_without_centerloss()
+    model.summary()
+    penultimate_layer = utils.find_layer_idx(model, 'conv2d_19')
+    layer_idx = utils.find_layer_idx(model, 'dense')
+
+    for modifier in [None, 'guided', 'relu']:
+        plt.figure()
+        f, ax = plt.subplots(1, 2)
+        plt.suptitle("vanilla" if modifier is None else modifier)
+        for i, img in enumerate(images):
+            # 20 is the imagenet index corresponding to `ouzel`
+            grads = visualize_cam(model, layer_idx, filter_indices=filter_idx,
+                                  seed_input=img, penultimate_layer_idx=penultimate_layer,
+                                  backprop_modifier=modifier)
+            # Lets overlay the heatmap onto original image.
+            jet_heatmap = np.uint8(cm.jet(grads) * 255)[..., 0]
+            ax[i].imshow(overlay(jet_heatmap, img))
+            plt.show()
 
 
 def get_images(files):
@@ -93,6 +124,26 @@ def step_decay(epoch):
 def create_resnet():
     resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, drop=drop, arch=arch)
     return resnet.create_model()
+
+
+def create_metric_resnet():
+    aux_input = Input((class_name_max,))
+    resnet = create_resnet()
+    main = Dropout(drop)(resnet.output)
+    main = Dense(class_name_max, activation='softmax', name='main_out')(main)
+    side = CenterLossLayer(alpha=alpha, name='centerlosslayer')([resnet.output, aux_input])
+
+    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
+    return model
+
+
+def create_metric_resnet_without_centerloss():
+    resnet = create_resnet()
+    main = Dropout(drop)(resnet.output)
+    main = Dense(class_name_max, activation='softmax', name='main_out')(main)
+
+    model = Model(inputs=[resnet.input], outputs=[main])
+    return model
 
 
 class CenterLossLayer(Layer):
@@ -127,16 +178,10 @@ def zero_loss(y_true, y_pred):
 
 
 def train_resnet():
-    aux_input = Input((class_name_max,))
-    resnet = create_resnet()
-    main = Dropout(drop)(resnet.output)
-    main = Dense(class_name_max, activation='softmax', name='main_out')(main)
-    side = CenterLossLayer(alpha=alpha, name='centerlosslayer')([resnet.output, aux_input])
-
-    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.Adam(lr=lr)
     if sgd:
         optim = optimizers.SGD(lr=lr, momentum=0.9, nesterov=True)
+    model = create_metric_resnet()
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
@@ -217,12 +262,10 @@ def find_distance(image_urls):
     paths = []
     for image_url in image_urls:
         image = imread(image_url)
-
         image = face_align(image)
         image = np.array(resize(image, (128, 128)))
         images.append(image)
         paths.append(image_url)
-
     test_distance(np.array(images), paths)
 
 
@@ -258,3 +301,6 @@ if __name__ == '__main__':
     elif options.mode == 'test':
         urls = options.urls.split(',')
         find_distance(urls)
+    elif options.mode == 'visualize':
+        urls = options.urls.split(',')
+        visualize(urls, filter_idx)
