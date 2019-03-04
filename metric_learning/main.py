@@ -50,6 +50,7 @@ parser.add_option('--pairs', type='string')
 parser.add_option('--filter_idx', type='int', default=None)
 parser.add_option('--lfw', type='string')
 parser.add_option('--drop', type='float', default=0.)
+parser.add_option('--weights')
 
 (options, args) = parser.parse_args()
 
@@ -70,6 +71,7 @@ drop = options.drop
 lfw = options.lfw
 pairs = options.pairs
 filter_idx = options.filter_idx
+weights = options.weights
 
 
 def visualize(image_urls, filter_idx):
@@ -80,13 +82,14 @@ def visualize(image_urls, filter_idx):
         images.append(image)
 
     model = create_metric_resnet_without_centerloss()
+    model.load_weights(weights, by_name=True)
     model.summary()
     penultimate_layer = utils.find_layer_idx(model, 'conv2d_19')
     layer_idx = utils.find_layer_idx(model, 'dense')
 
     for modifier in [None, 'guided', 'relu']:
         plt.figure()
-        f, ax = plt.subplots(1, 2)
+        f, ax = plt.subplots(1, len(images))
         plt.suptitle("vanilla" if modifier is None else modifier)
         for i, img in enumerate(images):
             # 20 is the imagenet index corresponding to `ouzel`
@@ -96,7 +99,7 @@ def visualize(image_urls, filter_idx):
             # Lets overlay the heatmap onto original image.
             jet_heatmap = np.uint8(cm.jet(grads) * 255)[..., 0]
             ax[i].imshow(overlay(jet_heatmap, img))
-            plt.show()
+            plt.savefig(f'visualize {modifier}')
 
 
 def get_images(files):
