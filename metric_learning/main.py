@@ -9,14 +9,15 @@ from matplotlib import pyplot as plt
 from skimage.io import imread
 from skimage.transform import resize
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import Model
-from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Layer, Input
+from tensorflow.python.keras import Model
+from tensorflow.python.keras import backend as K
+from tensorflow.python.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
 from tensorflow.python.keras.layers import Dense, Dropout
 from tensorflow.python.keras.utils import to_categorical
 
+from metric_learning.callbacks import ValidateOnLfw
 from metric_learning.generator import Generator
 from metric_learning.resnet34 import Resnet34
 
@@ -43,6 +44,8 @@ parser.add_option('--weights', type='string')
 parser.add_option('--mode', type='string')
 parser.add_option('--urls', type='string')
 parser.add_option('--thr', type='float')
+parser.add_option('--pairs', type='string')
+parser.add_option('--lfw', type='string')
 parser.add_option('--drop', type='float', default=0.)
 
 (options, args) = parser.parse_args()
@@ -61,6 +64,8 @@ arch = options.arch
 sgd = options.sgd
 aug = options.aug
 drop = options.drop
+lfw = options.lfw
+pairs = options.pairs
 
 
 def get_images(files):
@@ -143,7 +148,8 @@ def train_resnet():
 
     filepath = "weights-improvement-{epoch:02d}-{val_main_out_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_main_out_acc', verbose=1, save_best_only=False, mode='max')
-    callbacks = [checkpoint]
+    validate_on_lfw = ValidateOnLfw(pairs, lfw, class_name_max)
+    callbacks = [checkpoint, validate_on_lfw]
 
     if lr < 0:
         callbacks.append(LearningRateScheduler(step_decay))
