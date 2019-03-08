@@ -51,7 +51,7 @@ parser.add_option('--filter_idx', type='int', default=None)
 parser.add_option('--lfw', type='string')
 parser.add_option('--drop', type='float', default=0.)
 
-(options, args) = parser.parse_args()
+options, args = parser.parse_args()
 
 lr = options.lr
 center_weight = options.center

@@ -1,6 +1,6 @@
 from keras.applications.resnet50 import ResNet50
-from tensorflow.keras import Model
-from tensorflow.keras.layers import Input
+from tensorflow.python.keras import Model
+from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
     GlobalAveragePooling2D, Dropout, ZeroPadding2D, MaxPooling2D, Flatten
 from tensorflow.python.keras.layers import add, AvgPool2D
