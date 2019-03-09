@@ -26,51 +26,6 @@ from metric_learning.resnet34 import Resnet34
 output_len = 128
 input_image_size = 128
 
-parser = optparse.OptionParser()
-parser.add_option('--dataset', type='string')
-parser.add_option('--classes', type='int')
-parser.add_option('--lr', type='float')
-parser.add_option('--center', type='float')
-parser.add_option('--k_r', type='float', default=0.)
-parser.add_option('--b_r', type='float', default=0.)
-parser.add_option('--batch', type='int')
-parser.add_option('--epochs', type='int')
-parser.add_option('--verbose', type='int')
-parser.add_option('--alpha', type='float')
-parser.add_option('--generator', action='store_true', dest='fit_generator')
-parser.add_option('--aug', action='store_true', dest='aug', default=False)
-parser.add_option('--sgd', action='store_true', dest='sgd')
-parser.add_option('--arch', default='resnet')
-parser.add_option('--prev_weights', type='string')
-parser.add_option('--weights', type='string')
-parser.add_option('--mode', type='string')
-parser.add_option('--urls', type='string')
-parser.add_option('--thr', type='float')
-parser.add_option('--pairs', type='string')
-parser.add_option('--filter_idx', type='int', default=None)
-parser.add_option('--lfw', type='string')
-parser.add_option('--drop', type='float', default=0.)
-
-options, args = parser.parse_args()
-
-lr = options.lr
-center_weight = options.center
-batch_size = options.batch
-epochs = options.epochs
-class_name_max = options.classes
-verbose = options.verbose
-alpha = options.alpha
-fit_generator = options.fit_generator
-kernel_regularization = options.k_r
-bias_regularization = options.b_r
-arch = options.arch
-sgd = options.sgd
-aug = options.aug
-drop = options.drop
-lfw = options.lfw
-pairs = options.pairs
-filter_idx = options.filter_idx
-weights = options.weights
 
 
 def visualize(image_urls, filter_idx):
@@ -297,7 +252,51 @@ def face_align(img):
 
 
 if __name__ == '__main__':
-    print(aug)
+    parser = optparse.OptionParser()
+    parser.add_option('--dataset', type='string')
+    parser.add_option('--classes', type='int')
+    parser.add_option('--lr', type='float')
+    parser.add_option('--center', type='float')
+    parser.add_option('--k_r', type='float', default=0.)
+    parser.add_option('--b_r', type='float', default=0.)
+    parser.add_option('--batch', type='int')
+    parser.add_option('--epochs', type='int')
+    parser.add_option('--verbose', type='int')
+    parser.add_option('--alpha', type='float')
+    parser.add_option('--generator', action='store_true', dest='fit_generator')
+    parser.add_option('--aug', action='store_true', dest='aug', default=False)
+    parser.add_option('--sgd', action='store_true', dest='sgd')
+    parser.add_option('--arch', default='resnet')
+    parser.add_option('--prev_weights', type='string')
+    parser.add_option('--weights', type='string')
+    parser.add_option('--mode', type='string')
+    parser.add_option('--urls', type='string')
+    parser.add_option('--thr', type='float')
+    parser.add_option('--pairs', type='string')
+    parser.add_option('--filter_idx', type='int', default=None)
+    parser.add_option('--lfw', type='string')
+    parser.add_option('--drop', type='float', default=0.)
+
+    options, args = parser.parse_args()
+
+    lr = options.lr
+    center_weight = options.center
+    batch_size = options.batch
+    epochs = options.epochs
+    class_name_max = options.classes
+    verbose = options.verbose
+    alpha = options.alpha
+    fit_generator = options.fit_generator
+    kernel_regularization = options.k_r
+    bias_regularization = options.b_r
+    arch = options.arch
+    sgd = options.sgd
+    aug = options.aug
+    drop = options.drop
+    lfw = options.lfw
+    pairs = options.pairs
+    filter_idx = options.filter_idx
+    weights = options.weights
     if options.mode == 'train':
         train_resnet()
     elif options.mode == 'test':

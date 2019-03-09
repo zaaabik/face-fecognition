@@ -19,18 +19,18 @@ from __future__ import division
 
 import six
 from keras_applications.imagenet_utils import _obtain_input_shape
-from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.layers import GlobalAveragePooling2D
-from tensorflow.keras.layers import GlobalMaxPooling2D
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.layers import Reshape
-from tensorflow.keras.models import Model
-from tensorflow.keras.regularizers import l2
+from tensorflow.python.keras import backend as K
+from tensorflow.python.keras.layers import Activation
+from tensorflow.python.keras.layers import Conv2D
+from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Dropout
+from tensorflow.python.keras.layers import GlobalAveragePooling2D
+from tensorflow.python.keras.layers import GlobalMaxPooling2D
+from tensorflow.python.keras.layers import Input
+from tensorflow.python.keras.layers import MaxPooling2D
+from tensorflow.python.keras.layers import Reshape
+from tensorflow.python.keras.models import Model
+from tensorflow.python.keras.regularizers import l2
 from tensorflow.python.keras.layers import add, BatchNormalization
 
 nor = l2(6e-4)
@@ -463,6 +463,6 @@ def ResNet101(input_shape, classes):
 
 
 def ResNet152(input_shape, classes):
-    """ResNet with 152 layers and v2 residual units
+    """ResNet with 152 layers and v2 residual units1
     """
     return ResNet(input_shape, classes, bottleneck, repetitions=[3, 8, 36, 3])

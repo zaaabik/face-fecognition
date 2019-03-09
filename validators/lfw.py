@@ -126,6 +126,7 @@ if __name__ == '__main__':
     parser.add_option('--flipped', default=False)
     parser.add_option('--step', type='float')
     (options, args) = parser.parse_args()
+
     flipped = bool(options.flipped)
     arch = options.arch
     main()

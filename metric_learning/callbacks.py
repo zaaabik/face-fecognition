@@ -2,7 +2,7 @@ import keras
 import numpy as np
 from tensorflow.python.keras.callbacks import Callback
 
-# from validators.lfw import read_pairs_file, create_pairs, read_images
+from validators.lfw import read_pairs_file, create_pairs, read_images
 
 
 class ValidateOnLfw(Callback):
