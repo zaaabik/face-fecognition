@@ -291,5 +291,5 @@ class Resnet34:
 
     def __test_model3(self):
         model = ResNet18((self.input_size, self.input_size, 3), 128, dropout=self.drop)
-        x = Dense(self.output_size, use_bias=False)(model.output)
+        x = Dense(self.output_size)(model.output)
         return Model(model.input, x)

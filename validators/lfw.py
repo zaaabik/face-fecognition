@@ -8,18 +8,6 @@ from skimage.transform import resize
 
 from metric_learning.resnet34 import Resnet34
 
-parser = optparse.OptionParser()
-parser.add_option('--dataset')
-parser.add_option('--pairs')
-parser.add_option('--weights')
-parser.add_option('--arch', default='resnet')
-parser.add_option('--flipped', default=False)
-parser.add_option('--step', type='float')
-(options, args) = parser.parse_args()
-
-flipped = bool(options.flipped)
-arch = options.arch
-
 
 def read_pairs_file(path):
     pairs = []
@@ -130,4 +118,14 @@ def read_images(paths):
 
 
 if __name__ == '__main__':
+    parser = optparse.OptionParser()
+    parser.add_option('--dataset')
+    parser.add_option('--pairs')
+    parser.add_option('--weights')
+    parser.add_option('--arch', default='resnet')
+    parser.add_option('--flipped', default=False)
+    parser.add_option('--step', type='float')
+    (options, args) = parser.parse_args()
+    flipped = bool(options.flipped)
+    arch = options.arch
     main()
