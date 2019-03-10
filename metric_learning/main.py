@@ -220,10 +220,6 @@ def find_distance(image_urls):
 
         image = face_align(image)
         image = np.array(resize(image, (128, 128)))
-
-        print(image.max())
-        print(image.min())
-        return
         images.append(image)
         paths.append(image_url)
 
