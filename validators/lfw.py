@@ -112,7 +112,7 @@ def main():
 def read_images(paths):
     images = []
     for path in paths:
-        image = np.array(resize(imread(path), (128, 128))) / 255
+        image = np.array(resize(imread(path), (128, 128)))
         images.append(image)
     return np.array(images)
 
