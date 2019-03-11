@@ -146,8 +146,8 @@ def train_resnet():
     all_files = all_files[p]
     all_labels = all_labels[p]
 
-    filepath = "weights-improvement-{epoch:02d}-{val_main_out_acc:.2f}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_main_out_acc', verbose=1, save_best_only=False, mode='max')
+    filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, mode='max')
     validate_on_lfw = ValidateOnLfw(pairs, lfw, class_name_max)
     callbacks = [checkpoint]
 
