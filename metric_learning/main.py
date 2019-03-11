@@ -149,7 +149,7 @@ def train_resnet():
     filepath = "weights-improvement-{epoch:02d}-{val_main_out_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_main_out_acc', verbose=1, save_best_only=False, mode='max')
     validate_on_lfw = ValidateOnLfw(pairs, lfw, class_name_max)
-    callbacks = [checkpoint, validate_on_lfw]
+    callbacks = [checkpoint]
 
     if lr < 0:
         callbacks.append(LearningRateScheduler(step_decay))
