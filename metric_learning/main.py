@@ -11,10 +11,10 @@ from skimage.transform import resize
 from sklearn.model_selection import train_test_split
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
 from tensorflow.python.keras.layers import Dense, Dropout
+from tensorflow.python.keras.layers import Layer, Input
 from tensorflow.python.keras.utils import to_categorical
 from vis.utils import utils
 from vis.visualization import visualize_cam, overlay
@@ -27,7 +27,6 @@ output_len = 128
 input_image_size = 128
 
 
-
 def visualize(image_urls, filter_idx):
     images = []
     for image_url in image_urls:
@@ -36,7 +35,7 @@ def visualize(image_urls, filter_idx):
         images.append(image)
 
     model = create_metric_resnet_without_centerloss()
-    model.load_weights(weights, by_name=True)
+    # model.load_weights(weights, by_name=True)
     model.summary()
     penultimate_layer = utils.find_layer_idx(model, 'conv2d_19')
     layer_idx = utils.find_layer_idx(model, 'dense')
@@ -51,9 +50,9 @@ def visualize(image_urls, filter_idx):
                                   seed_input=img, penultimate_layer_idx=penultimate_layer,
                                   backprop_modifier=modifier)
             # Lets overlay the heatmap onto original image.
-            jet_heatmap = np.uint8(cm.jet(grads) * 255)[..., 0]
+            jet_heatmap = np.uint8(cm.jet(grads) * 255)[..., 1:]
             ax[i].imshow(overlay(jet_heatmap, img))
-            plt.savefig(f'visualize {modifier}')
+        plt.show()
 
 
 def get_images(files):
