@@ -8,7 +8,7 @@ from imutils.face_utils import FaceAligner
 parser = optparse.OptionParser()
 parser.add_option('--path')
 parser.add_option('--out')
-parser.add_option('--skip')
+parser.add_option('--skip', type='int')
 (options, args) = parser.parse_args()
 path = options.path
 out = options.out
