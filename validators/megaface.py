@@ -56,15 +56,12 @@ def align():
     with open(images_paths) as file:
         feature_file = json.load(file)
         paths = feature_file['path']
-        images = []
         for path in paths:
             image_path = os.path.join(base_path, path)
             image = cv2.imread(image_path)
             try:
                 image = face_align(image)
-                images.append(image)
             except:
-                images.append(image)
                 print(f'no face in {image_path}')
 
             out_path = os.path.join(out, path)
