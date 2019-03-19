@@ -38,8 +38,10 @@ def main():
                 image = np.array(resize(image, (128, 128)))
                 images.append(image)
             except:
-                print(image_path)
-                exit(0)
+                image = np.array(resize(image, (128, 128)))
+                images.append(image)
+                print(f'no face in {image_path}')
+
         embedding = resnet.predict(np.array(images))
         for idx, path in enumerate(paths):
             out_path = os.path.join(out, path)
