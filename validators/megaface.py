@@ -33,9 +33,13 @@ def main():
         for path in paths:
             image_path = os.path.join(base_path, path)
             image = imread(image_path)
-            image = face_align(image)
-            image = np.array(resize(image, (128, 128)))
-            images.append(image)
+            try:
+                image = face_align(image)
+                image = np.array(resize(image, (128, 128)))
+                images.append(image)
+            except:
+                print(image_path)
+                exit(0)
         embedding = resnet.predict(np.array(images))
         for idx, path in enumerate(paths):
             out_path = os.path.join(out, path)
