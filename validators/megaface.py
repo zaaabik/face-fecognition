@@ -34,14 +34,8 @@ def main():
         for path in paths:
             image_path = os.path.join(base_path, path)
             image = imread(image_path)
-            try:
-                image = face_align(image)
-                image = np.array(resize(image, (128, 128)))
-                images.append(image)
-            except:
-                image = np.array(resize(image, (128, 128)))
-                images.append(image)
-                print(f'no face in {image_path}')
+            image = np.array(resize(image, (128, 128)))
+            images.append(image)
 
         embedding = resnet.predict(np.array(images))
         for idx, path in enumerate(paths):
@@ -85,7 +79,7 @@ if __name__ == '__main__':
     weights = options.weights
     out = options.out
     mode = options.mode
-    if mode == 'full':
+    if mode == 'create':
         main()
     elif mode == 'align':
         align()
