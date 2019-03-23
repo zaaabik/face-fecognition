@@ -59,11 +59,16 @@ def align():
                 print(f'no face in {image_path}')
 
             out_path = os.path.join(out, path)
-            head, _ = os.path.split(out_path)
+            head, file = os.path.split(out_path)
             is_exists = os.path.exists(head)
             if not is_exists:
                 mkdir_p(head)
-            cv2.imwrite(out_path, image)
+            if file.find('.') == -1:
+                out_path += '.jpg'
+                cv2.imwrite(out_path, image)
+                os.rename(out_path, out_path[:-4])
+            else:
+                cv2.imwrite(out_path, image)
 
 
 if __name__ == '__main__':
