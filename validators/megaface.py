@@ -53,6 +53,10 @@ def align():
         for idx, path in enumerate(paths):
             if idx < skip:
                 continue
+            if not(type == 'gif' and path.find('.gif') == -1):
+                continue
+            else:
+                print(path)
             image_path = os.path.join(base_path, path)
             image = cv2.imread(image_path)
             try:
@@ -90,6 +94,7 @@ if __name__ == '__main__':
     parser.add_option('--out', type='string')
     parser.add_option('--mode', type='string', default='full')
     parser.add_option('--skip', type='int', default=0)
+    parser.add_option('--type', type='string', default='all')
     options, _ = parser.parse_args()
     images_paths = options.images_paths
     base_path = options.base_path
@@ -97,6 +102,7 @@ if __name__ == '__main__':
     skip = options.skip
     out = options.out
     mode = options.mode
+    type = options.type
     if mode == 'create':
         main()
     elif mode == 'align':
