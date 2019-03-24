@@ -53,7 +53,7 @@ def align():
         for idx, path in enumerate(paths):
             if idx < skip:
                 continue
-            if not(type == 'gif' and path.find('.gif') == -1):
+            if type == 'gif' and path.find('.gif') == -1:
                 continue
             else:
                 print(path)
