@@ -70,8 +70,13 @@ def align():
                     out_path += '.jpg'
                     cv2.imwrite(out_path, image)
                     os.rename(out_path, out_path[:-4])
+                elif file[:-4] == '.gif':
+                    out_path = out_path[:-4] + '.jpg'
+                    cv2.imwrite(out_path, image)
+                    os.rename(out_path, out_path[:-4] + '.gif')
                 else:
                     cv2.imwrite(out_path, image)
+
             except Exception as e:
                 print(e)
                 print(f'can`t write image {out_path}')
