@@ -50,7 +50,9 @@ def align():
     with open(images_paths) as file:
         feature_file = json.load(file)
         paths = feature_file['path']
-        for path in paths:
+        for idx, path in enumerate(paths):
+            if idx < skip:
+                continue
             image_path = os.path.join(base_path, path)
             image = cv2.imread(image_path)
             try:
@@ -61,14 +63,18 @@ def align():
             out_path = os.path.join(out, path)
             head, file = os.path.split(out_path)
             is_exists = os.path.exists(head)
-            if not is_exists:
-                mkdir_p(head)
-            if file.find('.') == -1:
-                out_path += '.jpg'
-                cv2.imwrite(out_path, image)
-                os.rename(out_path, out_path[:-4])
-            else:
-                cv2.imwrite(out_path, image)
+            try:
+                if not is_exists:
+                    mkdir_p(head)
+                if file.find('.') == -1:
+                    out_path += '.jpg'
+                    cv2.imwrite(out_path, image)
+                    os.rename(out_path, out_path[:-4])
+                else:
+                    cv2.imwrite(out_path, image)
+            except Exception as e:
+                print(e)
+                print(f'can`t write image {out_path}')
 
 
 if __name__ == '__main__':
@@ -78,10 +84,12 @@ if __name__ == '__main__':
     parser.add_option('--weights', type='string')
     parser.add_option('--out', type='string')
     parser.add_option('--mode', type='string', default='full')
+    parser.add_option('--skip', type='int', default=0)
     options, _ = parser.parse_args()
     images_paths = options.images_paths
     base_path = options.base_path
     weights = options.weights
+    skip = options.skip
     out = options.out
     mode = options.mode
     if mode == 'create':
