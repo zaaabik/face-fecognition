@@ -9,7 +9,7 @@ from tensorflow.python.keras.regularizers import l2
 
 from metric_learning.resnet_arch import ResNet18
 
-default_drop = 0.3
+default_drop = 0.05
 default_kernel_size = 3
 
 
