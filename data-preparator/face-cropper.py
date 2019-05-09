@@ -1,3 +1,4 @@
+import errno
 import optparse
 import os
 
@@ -11,8 +12,18 @@ parser.add_option("-m", "--mode")
 parser.add_option("-s", "--start_idx")
 parser.add_option("-l", "--log")
 (options, args) = parser.parse_args()
-start_idx = int(options.start_idx)
+start_idx = int(options.start_idx or 0)
 log = bool(options.log)
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 
 def main():
@@ -22,9 +33,8 @@ def main():
 
 def crop_faces_in_folder(path, out_folder):
     folders = os.listdir(path)
-    out_folder = os.path.dirname(path) + os.path.sep + out_folder
     if not os.path.isdir(out_folder):
-        os.mkdir(out_folder)
+        mkdir_p(out_folder)
     folders_count = len(folders)
     for idx, folder in enumerate(folders):
         if idx < start_idx:

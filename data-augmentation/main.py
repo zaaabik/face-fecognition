@@ -16,7 +16,7 @@ folder = options.folder
 sep = os.path.sep
 
 detector = dlib.get_frontal_face_detector()
-predictor_data_path = 'shape_predictor_68_face_landmarks.dat'
+predictor_data_path = '../shape_predictor_68_face_landmarks.dat'
 predictor = dlib.shape_predictor(predictor_data_path)
 
 

@@ -197,7 +197,7 @@ def test_distance(images, paths):
 
 
 def face_align(img):
-    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor("../shape_predictor_68_face_landmarks.dat")
     face_aligner = FaceAligner(predictor=predictor, desiredFaceHeight=128, desiredFaceWidth=128)
     detector = dlib.get_frontal_face_detector()
 

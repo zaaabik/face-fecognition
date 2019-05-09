@@ -1,3 +1,4 @@
+import errno
 import optparse
 import os
 
@@ -12,18 +13,29 @@ parser.add_option('--skip', type='int')
 (options, args) = parser.parse_args()
 path = options.path
 out = options.out
-skip = options.skip
+skip = options.skip or 0
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 
 def main():
-    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor("../shape_predictor_68_face_landmarks.dat")
     face_aligner = FaceAligner(predictor=predictor, desiredFaceHeight=128, desiredFaceWidth=128)
     detector = dlib.get_frontal_face_detector()
-    #
+
     folders = os.listdir(path)
 
     if not os.path.isdir(out):
-        os.mkdir(out)
+        mkdir_p(out)
+
     for idx, folder in enumerate(folders):
         if idx < skip:
             continue
