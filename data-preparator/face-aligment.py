@@ -9,7 +9,7 @@ from imutils.face_utils import FaceAligner
 parser = optparse.OptionParser()
 parser.add_option('--path')
 parser.add_option('--out')
-parser.add_option('--skip', type='int')
+parser.add_option('--skip', type='int', default=0)
 (options, args) = parser.parse_args()
 path = options.path
 out = options.out
@@ -28,7 +28,7 @@ def mkdir_p(path):
 
 def main():
     predictor = dlib.shape_predictor("../shape_predictor_68_face_landmarks.dat")
-    face_aligner = FaceAligner(predictor=predictor, desiredFaceHeight=128, desiredFaceWidth=128)
+    face_aligner = FaceAligner(predictor=predictor, desiredLeftEye=(0.315, 0.315))
     detector = dlib.get_frontal_face_detector()
 
     folders = os.listdir(path)
