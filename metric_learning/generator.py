@@ -15,8 +15,6 @@ class Generator(Sequence):
 
     def __len__(self):
         b_s = self.batch_size
-        if self.aug:
-            b_s = b_s // 2
         return len(self.all_files) // b_s
 
     def __getitem__(self, idx):
