@@ -5,7 +5,6 @@ import cv2
 import dlib
 import numpy as np
 from imutils.face_utils import FaceAligner
-from keras.optimizers import adam
 from keras.utils import to_categorical
 from skimage.io import imread
 from skimage.transform import resize
@@ -204,9 +203,12 @@ def integration_test():
     model.fit(x_train, y_train,
               batch_size=batch_size,
               epochs=epochs,
-              verbose=2,
+              verbose=verbose,
               validation_data=(x_test, y_test),
-              shuffle=True)
+              shuffle=True,
+              workers=1,
+              use_multiprocessing=False
+              )
 
 
 if __name__ == '__main__':
