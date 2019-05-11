@@ -228,22 +228,19 @@ class Resnet34:
         x = Activation('relu')(x)
         x = ZeroPadding2D(padding=(1, 1), name='pool1_pad')(x)
         x = MaxPooling2D((3, 3), strides=(2, 2))(x)
-        x = Dropout(default_drop)(x)
 
         x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1))
         x = identity_block(x, 3, [16, 16, 64], stage=2, block='b')
         x = identity_block(x, 3, [16, 16, 64], stage=2, block='c')
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
-        x = Dropout(default_drop)(x)
 
         x = conv_block(x, 3, [16, 16, 64], stage=3, block='a', strides=(1, 1))
         x = identity_block(x, 3, [16, 16, 64], stage=3, block='b')
         x = identity_block(x, 3, [16, 16, 64], stage=3, block='c')
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
-        x = Dropout(default_drop)(x)
 
         x = GlobalAveragePooling2D()(x)
-        x = Dense(self.output_size, use_bias=False)(x)
+        x = Dense(self.output_size)(x)
         return Model(img_input, x)
 
     def __test_model3(self):
