@@ -2,10 +2,8 @@ from keras.applications.resnet50 import ResNet50
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormalization, Activation, \
-    GlobalAveragePooling2D, Dropout, ZeroPadding2D, MaxPooling2D, Flatten
+    GlobalAveragePooling2D, Dropout, ZeroPadding2D, MaxPooling2D
 from tensorflow.python.keras.layers import add, AvgPool2D
-from tensorflow.python.keras.layers.advanced_activations import PReLU
-from tensorflow.python.keras.regularizers import l2
 
 from metric_learning.resnet_arch import ResNet18
 
@@ -74,7 +72,7 @@ def conv_block(input_tensor,
     return x
 
 
-def identity_block(input_tensor, kernel_size, filters, stage, block, norm):
+def identity_block(input_tensor, kernel_size, filters, stage, block):
     """The identity block is the block that has no conv layer at shortcut.
 
     # Arguments
@@ -95,7 +93,6 @@ def identity_block(input_tensor, kernel_size, filters, stage, block, norm):
 
     x = Conv2D(filters1, (1, 1),
                kernel_initializer='he_normal',
-               kernel_regularizer=norm,
                name=conv_name_base + '2a')(input_tensor)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
     x = Activation('relu')(x)
@@ -109,7 +106,6 @@ def identity_block(input_tensor, kernel_size, filters, stage, block, norm):
 
     x = Conv2D(filters3, (1, 1),
                kernel_initializer='he_normal',
-               kernel_regularizer=norm,
                name=conv_name_base + '2c')(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
 
@@ -119,21 +115,17 @@ def identity_block(input_tensor, kernel_size, filters, stage, block, norm):
 
 
 class Resnet34:
-    def __init__(self, kernel_regularization, bias_regularization, input_size, output_size, drop=0., arch='resnet'):
-        self.kernel_regularization = l2(kernel_regularization)
-        self.bias_regularization = l2(bias_regularization)
+    def __init__(self, input_size, output_size, drop=0., arch='resnet'):
         self.input_size = input_size
         self.output_size = output_size
         self.arch = arch
         self.drop = drop
 
     def conv_block(self, feat_maps_out, prev, strides):
-        prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_initializer='he_normal',
-                      kernel_regularizer=self.kernel_regularization, bias_regularizer=self.bias_regularization)(prev)
+        prev = Conv2D(feat_maps_out, (3, 3), strides=strides, padding='same', kernel_initializer='he_normal')(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
         prev = Activation('relu')(prev)
-        prev = Conv2D(feat_maps_out, (3, 3), padding='same', kernel_regularizer=self.kernel_regularization,
-                      bias_regularizer=self.bias_regularization)(prev)
+        prev = Conv2D(feat_maps_out, (3, 3), padding='same')(prev)
         prev = BatchNormalization()(prev)  # Specifying the axis and mode allows for later merging
         return prev
 
@@ -238,52 +230,20 @@ class Resnet34:
         x = MaxPooling2D((3, 3), strides=(2, 2))(x)
         x = Dropout(default_drop)(x)
 
-        x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1), norm=self.kernel_regularization)
-        x = identity_block(x, 3, [16, 16, 64], stage=2, block='b', norm=self.kernel_regularization)
-        x = identity_block(x, 3, [16, 16, 64], stage=2, block='c', norm=self.kernel_regularization)
+        x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1))
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='b')
+        x = identity_block(x, 3, [16, 16, 64], stage=2, block='c')
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
         x = Dropout(default_drop)(x)
 
         x = conv_block(x, 3, [16, 16, 64], stage=3, block='a', strides=(1, 1))
-        x = identity_block(x, 3, [16, 16, 64], stage=3, block='b', norm=self.kernel_regularization)
-        x = identity_block(x, 3, [16, 16, 64], stage=3, block='c', norm=self.kernel_regularization)
+        x = identity_block(x, 3, [16, 16, 64], stage=3, block='b')
+        x = identity_block(x, 3, [16, 16, 64], stage=3, block='c')
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
         x = Dropout(default_drop)(x)
 
         x = GlobalAveragePooling2D()(x)
         x = Dense(self.output_size, use_bias=False)(x)
-        return Model(img_input, x)
-
-    def __test_model2(self):
-        img_input = Input(shape=(self.input_size, self.input_size, 3))
-        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
-                   kernel_regularizer=self.kernel_regularization)(img_input)
-        x = PReLU()(x)
-        x = Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
-                   kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU()(x)
-        x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
-        #
-        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
-                   kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU()(x)
-        x = Conv2D(filters=64, kernel_size=(5, 5), strides=(1, 1), padding='same', kernel_initializer='he_normal',
-                   kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU()(x)
-        x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
-        #
-        x = Conv2D(filters=128, kernel_size=(5, 5), strides=(1, 1), padding='same',
-                   kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU()(x)
-        x = Conv2D(filters=128, kernel_size=(5, 5), strides=(1, 1), padding='same',
-                   kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU()(x)
-        x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(x)
-        #
-        x = Flatten()(x)
-        x = Dropout(self.drop)(x)
-        x = Dense(self.output_size, kernel_regularizer=self.kernel_regularization)(x)
-        x = PReLU()(x)
         return Model(img_input, x)
 
     def __test_model3(self):

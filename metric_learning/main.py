@@ -5,19 +5,17 @@ import cv2
 import dlib
 import numpy as np
 from imutils.face_utils import FaceAligner
-from matplotlib import pyplot as plt
+from keras.optimizers import adam
+from keras.utils import to_categorical
 from skimage.io import imread
 from skimage.transform import resize
-from sklearn.model_selection import train_test_split
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.layers import Layer, Input
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
-from tensorflow.python.keras.layers import Dense, Dropout
-from tensorflow.python.keras.utils import to_categorical
+from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Layer, Input
 
-from metric_learning.callbacks import ValidateOnLfw
 from metric_learning.generator import Generator
 from metric_learning.resnet34 import Resnet34
 
@@ -47,7 +45,7 @@ def step_decay(epoch):
 
 
 def create_resnet():
-    resnet = Resnet34(kernel_regularization, bias_regularization, input_image_size, output_len, drop=drop, arch=arch)
+    resnet = Resnet34(input_image_size, output_len, drop=drop, arch=arch)
     return resnet.create_model()
 
 
@@ -85,26 +83,23 @@ def zero_loss(y_true, y_pred):
 def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
-    main = Dropout(drop)(resnet.output)
-    main = Dense(class_name_max, activation='softmax', name='main_out')(main)
-    side = CenterLossLayer(alpha=alpha, name='centerlosslayer')([resnet.output, aux_input])
+    main = Dense(class_name_max, activation='softmax', name='main_out')(resnet.output)
+    side = CenterLossLayer(name='centerlosslayer')([resnet.output, aux_input])
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.Adam(lr=lr)
-    if sgd:
-        optim = optimizers.SGD(lr=lr, momentum=0.9, nesterov=True)
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
 
-    all_files, all_labels = get_files(options.dataset)
-    p = np.random.permutation(len(all_files))
-    all_files = all_files[p]
-    all_labels = all_labels[p]
+    train_features, train_labels = get_files(train)
+    test_features, test_labels = get_files(test)
+    # p = np.random.permutation(len(all_files))
+    # all_files = all_files[p]
+    # all_labels = all_labels[p]
 
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, mode='max')
-    validate_on_lfw = ValidateOnLfw(pairs, lfw, class_name_max)
     callbacks = [checkpoint]
 
     if lr < 0:
@@ -113,36 +108,15 @@ def train_resnet():
     if options.prev_weights and os.path.exists(options.prev_weights):
         model.load_weights(options.prev_weights)
 
-    if fit_generator:
-        x_train, x_test, y_train, y_test = train_test_split(all_files, all_labels, test_size=0.2)
-        training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max, aug)
-        test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max, False)
+    training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
+    test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
 
-        history = model.fit_generator(training_generator,
-                                      epochs=epochs,
-                                      verbose=verbose,
-                                      validation_data=test_generator,
-                                      callbacks=callbacks
-                                      )
-
-        plt.plot(history.history['val_main_out_acc'])
-        plt.plot(history.history['main_out_acc'])
-        plt.title('model accuracy')
-        plt.ylabel('accuracy')
-        plt.xlabel('epoch')
-        plt.legend(['validation data', 'train data'], loc='upper left')
-        plt.savefig(f'training k_r={kernel_regularization} b_r={bias_regularization} lr={lr}.png')
-    else:
-        images = get_images(all_files)
-        dummy = np.zeros((np.array(images).shape[0], 1))
-        hot_encoded_labels = to_categorical(all_labels, class_name_max)
-        model.fit([images, hot_encoded_labels],
-                  [hot_encoded_labels, dummy],
-                  epochs=epochs,
-                  validation_split=0.2,
-                  batch_size=batch_size,
-                  verbose=verbose)
-    model.save_weights('resnet2d.h5')
+    model.fit_generator(training_generator,
+                        epochs=epochs,
+                        verbose=verbose,
+                        validation_data=test_generator,
+                        callbacks=callbacks
+                        )
 
 
 def get_files(path):
@@ -207,9 +181,36 @@ def face_align(img):
     return aligned_face
 
 
+def integration_test():
+    model = create_resnet()
+    num_classes = 10
+    from keras.datasets import cifar10
+    (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+    y_train = to_categorical(y_train, num_classes)
+    y_test = to_categorical(y_test, num_classes)
+    opt = adam(lr=lr, decay=1e-6)
+
+    model.compile(loss='categorical_crossentropy',
+                  optimizer=opt,
+                  metrics=['accuracy'])
+
+    x_train = x_train.astype('float32')
+    x_test = x_test.astype('float32')
+    x_train /= 255
+    x_test /= 255
+
+    model.fit(x_train, y_train,
+              batch_size=batch_size,
+              epochs=epochs,
+              verbose=2,
+              validation_data=(x_test, y_test),
+              shuffle=True)
+
+
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('--dataset', type='string')
+    parser.add_option('--train', type='string')
+    parser.add_option('--test', type='string')
     parser.add_option('--classes', type='int')
     parser.add_option('--lr', type='float')
     parser.add_option('--center', type='float')
@@ -219,17 +220,12 @@ if __name__ == '__main__':
     parser.add_option('--epochs', type='int')
     parser.add_option('--verbose', type='int')
     parser.add_option('--alpha', type='float')
-    parser.add_option('--generator', action='store_true', dest='fit_generator')
     parser.add_option('--aug', action='store_true', dest='aug', default=False)
-    parser.add_option('--sgd', action='store_true', dest='sgd')
     parser.add_option('--arch', default='resnet')
     parser.add_option('--prev_weights', type='string')
     parser.add_option('--weights', type='string')
     parser.add_option('--mode', type='string')
     parser.add_option('--urls', type='string')
-    parser.add_option('--thr', type='float')
-    parser.add_option('--pairs', type='string')
-    parser.add_option('--lfw', type='string')
     parser.add_option('--drop', type='float', default=0.)
 
     (options, args) = parser.parse_args()
@@ -240,19 +236,14 @@ if __name__ == '__main__':
     epochs = options.epochs
     class_name_max = options.classes
     verbose = options.verbose
-    alpha = options.alpha
-    fit_generator = options.fit_generator
-    kernel_regularization = options.k_r
-    bias_regularization = options.b_r
     arch = options.arch
-    sgd = options.sgd
-    aug = options.aug
     drop = options.drop
-    lfw = options.lfw
-    pairs = options.pairs
-    print(aug)
+    train = options.train
+    test = options.test
     if options.mode == 'train':
         train_resnet()
     elif options.mode == 'test':
         urls = options.urls.split(',')
         find_distance(urls)
+    elif options.mode == 'integr':
+        integration_test()
