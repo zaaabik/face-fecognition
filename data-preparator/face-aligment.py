@@ -28,7 +28,7 @@ def mkdir_p(path):
 
 def main():
     predictor = dlib.shape_predictor("../shape_predictor_68_face_landmarks.dat")
-    face_aligner = FaceAligner(predictor=predictor, desiredLeftEye=(0.315, 0.315))
+    face_aligner = FaceAligner(predictor=predictor, desiredLeftEye=(0.315, 0.315), desiredFaceWidth=128)
     detector = dlib.get_frontal_face_detector()
 
     folders = os.listdir(path)
