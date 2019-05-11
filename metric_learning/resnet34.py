@@ -113,7 +113,7 @@ def resnet_v2(input_shape, depth, out_size=128):
     x = AveragePooling2D(pool_size=8)(x)
     y = Flatten()(x)
     outputs = Dense(out_size)(y)
-    
+
     model = Model(inputs=inputs, outputs=outputs)
     return model
 

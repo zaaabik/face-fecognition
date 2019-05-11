@@ -8,6 +8,7 @@ from imutils.face_utils import FaceAligner
 from keras.utils import to_categorical
 from skimage.io import imread
 from skimage.transform import resize
+from sklearn.cross_validation import train_test_split
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
@@ -92,7 +93,9 @@ def train_resnet():
                   loss_weights=[1, center_weight], metrics=['accuracy'])
 
     train_features, train_labels = get_files(train)
+    x_train, x_test, y_train, y_test = train_test_split(train_features, train_labels, test_size=0.2)
     test_features, test_labels = get_files(test)
+
     # p = np.random.permutation(len(all_files))
     # all_files = all_files[p]
     # all_labels = all_labels[p]
@@ -109,6 +112,9 @@ def train_resnet():
 
     training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
     test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
+
+    training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
+    test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
 
     model.fit_generator(training_generator,
                         epochs=epochs,
