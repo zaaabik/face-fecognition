@@ -188,7 +188,7 @@ def integration_test():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
     y_train = to_categorical(y_train, num_classes)
     y_test = to_categorical(y_test, num_classes)
-    opt = adam(lr=lr, decay=1e-6)
+    opt = optimizers.Adam(lr=lr, decay=1e-6)
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=opt,
