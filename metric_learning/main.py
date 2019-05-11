@@ -182,8 +182,10 @@ def face_align(img):
 
 
 def integration_test():
-    model = create_resnet(32)
     num_classes = 10
+    model = create_resnet(32)
+    main = Dense(num_classes, activation='softmax', name='main_out')(model.output)
+    model = Model(inputs=[model.input], outputs=[main])
     from keras.datasets import cifar10
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
     y_train = to_categorical(y_train, num_classes)
@@ -217,7 +219,7 @@ if __name__ == '__main__':
     parser.add_option('--k_r', type='float', default=0.)
     parser.add_option('--b_r', type='float', default=0.)
     parser.add_option('--batch', type='int')
-    parser.add_option('--epochs', type='int')
+    parser.add_option('--epochs', type='int', default=250)
     parser.add_option('--verbose', type='int')
     parser.add_option('--alpha', type='float')
     parser.add_option('--aug', action='store_true', dest='aug', default=False)

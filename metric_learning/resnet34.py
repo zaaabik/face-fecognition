@@ -204,14 +204,11 @@ class Resnet34:
             prev = self.level1(prev)
             prev = self.level0(prev)
             prev = GlobalAveragePooling2D()(prev)
-            output = Dense(self.output_size, use_bias=False)(prev)
+            output = Dense(self.output_size)(prev)
             return Model(image_input, output)
         elif self.arch == 'test':
             print('test')
             return self.__test_model()
-        elif self.arch == 'test2':
-            print('test2')
-            return self.__test_model2()
         elif self.arch == 'test3':
             print('test3')
             return self.__test_model3()
