@@ -1,4 +1,3 @@
-import keras
 from keras.applications.resnet50 import ResNet50
 from keras.layers import AveragePooling2D, Flatten
 from keras.regularizers import l2
@@ -136,7 +135,7 @@ def resnet_v2(input_shape, depth):
                                  strides=strides,
                                  activation=None,
                                  batch_normalization=False)
-            x = keras.layers.add([x, y])
+            x = add([x, y])
 
         num_filters_in = num_filters_out
 
