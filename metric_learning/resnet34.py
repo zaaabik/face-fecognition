@@ -226,15 +226,25 @@ class Resnet34:
         x = ZeroPadding2D(padding=(1, 1), name='pool1_pad')(x)
         x = MaxPooling2D((3, 3), strides=(2, 2))(x)
 
-        x = conv_block(x, 3, [16, 16, 64], stage=2, block='a', strides=(1, 1))
-        x = identity_block(x, 3, [16, 16, 64], stage=2, block='b')
-        x = identity_block(x, 3, [16, 16, 64], stage=2, block='c')
-        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+        x = conv_block(x, 3, [64, 64, 256], stage=2, block='a', strides=(1, 1))
+        x = identity_block(x, 3, [64, 64, 256], stage=2, block='b')
+        x = identity_block(x, 3, [64, 64, 256], stage=2, block='c')
 
-        x = conv_block(x, 3, [16, 16, 64], stage=3, block='a', strides=(1, 1))
-        x = identity_block(x, 3, [16, 16, 64], stage=3, block='b')
-        x = identity_block(x, 3, [16, 16, 64], stage=3, block='c')
-        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+        x = conv_block(x, 3, [128, 128, 512], stage=3, block='a')
+        x = identity_block(x, 3, [128, 128, 512], stage=3, block='b')
+        x = identity_block(x, 3, [128, 128, 512], stage=3, block='c')
+        x = identity_block(x, 3, [128, 128, 512], stage=3, block='d')
+
+        x = conv_block(x, 3, [256, 256, 1024], stage=4, block='a')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='b')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='c')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='d')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f')
+
+        x = conv_block(x, 3, [512, 512, 2048], stage=5, block='a')
+        x = identity_block(x, 3, [512, 512, 2048], stage=5, block='b')
+        x = identity_block(x, 3, [512, 512, 2048], stage=5, block='c')
 
         x = GlobalAveragePooling2D()(x)
         x = Dense(self.output_size)(x)
