@@ -82,7 +82,7 @@ def zero_loss(y_true, y_pred):
 def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
-    main = Dense(class_name_max, activation='softmax', name='main_out')(resnet.output)
+    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
     side = CenterLossLayer(name='centerlosslayer')([resnet.output, aux_input])
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
@@ -181,15 +181,16 @@ def face_align(img):
 
 
 def integration_test():
+    from keras.datasets import cifar10
+
     num_classes = 10
     model = create_resnet(32)
-    main = Dense(num_classes, activation='softmax', name='main_out')(model.output)
+    main = Dense(num_classes, activation='softmax', name='main_out', kernel_initializer='he_normal')(model.output)
     model = Model(inputs=[model.input], outputs=[main])
-    from keras.datasets import cifar10
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
     y_train = to_categorical(y_train, num_classes)
     y_test = to_categorical(y_test, num_classes)
-    opt = optimizers.Adam(lr=lr, decay=1e-6)
+    opt = optimizers.Nadam()
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=opt,
