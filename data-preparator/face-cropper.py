@@ -1,9 +1,10 @@
-import errno
 import optparse
 import os
 
 import cv2
 import dlib
+
+from helpers.helpers import mkdir_p
 
 parser = optparse.OptionParser()
 parser.add_option("-d", "--data")
@@ -14,16 +15,6 @@ parser.add_option("-l", "--log")
 (options, args) = parser.parse_args()
 start_idx = int(options.start_idx or 0)
 log = bool(options.log)
-
-
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
 
 
 def main():

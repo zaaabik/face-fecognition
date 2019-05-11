@@ -6,6 +6,8 @@ import cv2
 import dlib
 from imutils.face_utils import FaceAligner
 
+from helpers.helpers import mkdir_p
+
 parser = optparse.OptionParser()
 parser.add_option('--path')
 parser.add_option('--out')
@@ -14,16 +16,6 @@ parser.add_option('--skip', type='int', default=0)
 path = options.path
 out = options.out
 skip = options.skip or 0
-
-
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
 
 
 def main():

@@ -1,4 +1,4 @@
-import errno
+import json
 import json
 import optparse
 import os
@@ -8,19 +8,10 @@ import numpy as np
 from skimage.io import imread
 from skimage.transform import resize
 
+from helpers.helpers import mkdir_p
 from metric_learning.main import face_align
 from metric_learning.resnet34 import Resnet34
 from validators.matio import save_mat
-
-
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
 
 
 def main():
