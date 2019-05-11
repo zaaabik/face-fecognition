@@ -101,7 +101,7 @@ def train_resnet():
     # all_labels = all_labels[p]
 
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=2, save_best_only=False, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, mode='max')
     callbacks = [checkpoint]
 
     if lr < 0:
