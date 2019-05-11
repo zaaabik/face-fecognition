@@ -8,7 +8,7 @@ from imutils.face_utils import FaceAligner
 from keras.utils import to_categorical
 from skimage.io import imread
 from skimage.transform import resize
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
