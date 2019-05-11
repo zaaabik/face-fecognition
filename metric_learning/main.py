@@ -44,8 +44,8 @@ def step_decay(epoch):
         return 0.00005
 
 
-def create_resnet():
-    resnet = Resnet34(input_image_size, output_len, drop=drop, arch=arch)
+def create_resnet(image_size=None):
+    resnet = Resnet34(image_size or input_image_size, output_len, drop=drop, arch=arch)
     return resnet.create_model()
 
 
@@ -182,7 +182,7 @@ def face_align(img):
 
 
 def integration_test():
-    model = create_resnet()
+    model = create_resnet(32)
     num_classes = 10
     from keras.datasets import cifar10
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()

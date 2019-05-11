@@ -115,7 +115,7 @@ def identity_block(input_tensor, kernel_size, filters, stage, block):
 
 
 class Resnet34:
-    def __init__(self, input_size, output_size, drop=0., arch='resnet'):
+    def __init__(self, input_size=128, output_size, drop=0., arch='resnet'):
         self.input_size = input_size
         self.output_size = output_size
         self.arch = arch
