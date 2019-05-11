@@ -94,7 +94,7 @@ def train_resnet():
 
     train_features, train_labels = get_files(train)
     x_train, x_test, y_train, y_test = train_test_split(train_features, train_labels, test_size=0.2)
-    test_features, test_labels = get_files(test)
+    # test_features, test_labels = get_files(test)
 
     # p = np.random.permutation(len(all_files))
     # all_files = all_files[p]
@@ -110,8 +110,8 @@ def train_resnet():
     if options.prev_weights and os.path.exists(options.prev_weights):
         model.load_weights(options.prev_weights)
 
-    training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
-    test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
+    # training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
+    # test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
 
     training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
     test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
