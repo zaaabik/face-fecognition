@@ -101,7 +101,7 @@ def train_resnet():
     # all_labels = all_labels[p]
 
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=2, save_best_only=False, mode='max')
     callbacks = [checkpoint]
 
     if lr < 0:
@@ -113,8 +113,8 @@ def train_resnet():
     # training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
     # test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
 
-    training_generator = Generator(x_train, y_train, input_image_size, batch_size, class_name_max)
-    test_generator = Generator(x_test, y_test, input_image_size, batch_size, class_name_max)
+    training_generator = Generator(x_train, y_train, batch_size, class_name_max, input_image_size)
+    test_generator = Generator(x_test, y_test, batch_size, class_name_max, input_image_size)
 
     model.fit_generator(training_generator,
                         epochs=epochs,
