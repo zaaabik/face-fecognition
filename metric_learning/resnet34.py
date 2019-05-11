@@ -57,7 +57,7 @@ def resnet_layer(inputs,
     return x
 
 
-def resnet_v2(input_shape, depth):
+def resnet_v2(input_shape, depth, out_size=128):
     """ResNet Version 2 Model builder [b]
 
     Stacks of (1 x 1)-(3 x 3)-(1 x 1) BN-ReLU-Conv2D or also known as
@@ -143,7 +143,8 @@ def resnet_v2(input_shape, depth):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
     x = AveragePooling2D(pool_size=8)(x)
-    outputs = Flatten()(x)
+    y = Flatten()(x)
+    outputs = Dense(out_size)(y)
     # Instantiate model.
     model = Model(inputs=inputs, outputs=outputs)
     return model
@@ -397,4 +398,5 @@ class Resnet34:
         return Model(model.input, x)
 
     def __resnet20(self):
-        model = resnet_v2((self.input_size, self.input_size, 3), 20, )
+        model = resnet_v2((self.input_size, self.input_size, 3), 20, self.output_size)
+        return model
