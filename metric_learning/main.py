@@ -8,11 +8,10 @@ from imutils.face_utils import FaceAligner
 from keras.utils import to_categorical
 from skimage.io import imread
 from skimage.transform import resize
-from sklearn.model_selection import train_test_split
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
-from tensorflow.python.keras.callbacks import LearningRateScheduler, ModelCheckpoint
+from tensorflow.python.keras.callbacks import ModelCheckpoint
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.layers import Layer, Input
 
@@ -31,17 +30,6 @@ def get_images(files):
         images.append(img)
 
     return np.array(images)
-
-
-def step_decay(epoch):
-    if epoch < 70:
-        return 0.01
-    elif 70 <= epoch < 150:
-        return 0.005
-    elif 150 <= epoch < 250:
-        return 0.0001
-    else:
-        return 0.00005
 
 
 def create_resnet(image_size=None):
@@ -93,35 +81,25 @@ def train_resnet():
                   loss_weights=[1, center_weight], metrics=['accuracy'])
 
     train_features, train_labels = get_files(train)
-    x_train, x_test, y_train, y_test = train_test_split(train_features, train_labels, test_size=0.2)
-    # test_features, test_labels = get_files(test)
-
-    # p = np.random.permutation(len(all_files))
-    # all_files = all_files[p]
-    # all_labels = all_labels[p]
+    test_features, test_labels = get_files(test)
 
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, mode='max')
     callbacks = [checkpoint]
 
-    if lr < 0:
-        callbacks.append(LearningRateScheduler(step_decay))
+    if options.weights and os.path.exists(options.weights):
+        model.load_weights(options.weights)
 
-    if options.prev_weights and os.path.exists(options.prev_weights):
-        model.load_weights(options.prev_weights)
+    training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
+    test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
 
-    # training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
-    # test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
-
-    training_generator = Generator(x_train, y_train, batch_size, class_name_max, input_image_size)
-    test_generator = Generator(x_test, y_test, batch_size, class_name_max, input_image_size)
-
-    model.fit_generator(training_generator,
-                        epochs=epochs,
-                        verbose=verbose,
-                        validation_data=test_generator,
-                        callbacks=callbacks
-                        )
+    model.fit_generator(
+        training_generator,
+        epochs=epochs,
+        verbose=verbose,
+        validation_data=test_generator,
+        callbacks=callbacks
+    )
 
 
 def get_files(path):
@@ -129,9 +107,11 @@ def get_files(path):
     all_files = []
     all_labels = []
     folders = os.listdir(path)
-    for current_label, folder in enumerate(folders):
+    for _, folder in enumerate(folders):
+        current_label = folder[1:]
+        current_label = int(current_label)
         if current_label >= class_name_max:
-            break
+            continue
         cur = path + os.path.sep + folder
         files = os.listdir(cur)
         for idx, val in enumerate(files):
@@ -143,7 +123,6 @@ def get_files(path):
 
         files_count += current_folder_files_count
         all_files.extend(files)
-        current_label += 1
     return np.array(all_files), np.array(all_labels)
 
 
@@ -230,12 +209,11 @@ if __name__ == '__main__':
     parser.add_option('--batch', type='int', default=90)
     parser.add_option('--epochs', type='int', default=250)
     parser.add_option('--verbose', type='int', default='1')
-    parser.add_option('--alpha', type='float')
+    parser.add_option('--alpha', type='float', default=0.5)
     parser.add_option('--aug', action='store_true', dest='aug', default=False)
     parser.add_option('--arch', default='resnet')
-    parser.add_option('--prev_weights', type='string')
     parser.add_option('--weights', type='string')
-    parser.add_option('--mode', type='string')
+    parser.add_option('--mode', type='string', default='train')
     parser.add_option('--urls', type='string')
     parser.add_option('--drop', type='float', default=0.)
 
@@ -251,6 +229,8 @@ if __name__ == '__main__':
     drop = options.drop
     train = options.train
     test = options.test
+    weights = options.weights
+
     if options.mode == 'train':
         train_resnet()
     elif options.mode == 'test':
