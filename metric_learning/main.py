@@ -39,9 +39,10 @@ def create_resnet(image_size=None):
 
 class CenterLossLayer(Layer):
 
-    def __init__(self, alpha=0.5, **kwargs):
+    def __init__(self, alpha=0.5, max_class=10, **kwargs):
         super().__init__(**kwargs)
         self.alpha = alpha
+        self.max_class = max_class
 
     def build(self, input_shape):
         self.centers = self.add_weight(name='centers',
@@ -73,7 +74,7 @@ def train_resnet():
     test_features, test_labels = get_files(test)
 
     global class_name_max
-    class_name_max = np.max(np.max(train_labels), np.max(test_labels))
+    class_name_max = np.max([np.max(train_labels), np.max(test_labels)])
 
     training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
     test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
@@ -81,7 +82,7 @@ def train_resnet():
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
     main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
-    side = CenterLossLayer(name='centerlosslayer')([resnet.output, aux_input])
+    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
 
     model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
     optim = optimizers.Nadam()
