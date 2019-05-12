@@ -96,7 +96,6 @@ def main():
     for i in range(0, res.shape[0]):
         right_answers = (res[i] == positive).sum()
         accuracy = right_answers / count
-        print('accuracy: ', accuracy)
         thrs_acc.append(accuracy)
     thrs_acc = np.array(thrs_acc)
 
