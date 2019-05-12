@@ -74,7 +74,7 @@ def train_resnet():
     test_features, test_labels = get_files(test)
 
     global class_name_max
-    class_name_max = np.max([np.max(train_labels), np.max(test_labels)])
+    class_name_max = np.max([np.max(train_labels), np.max(test_labels)]) + 1
 
     training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
     test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
