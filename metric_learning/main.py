@@ -8,6 +8,7 @@ from imutils.face_utils import FaceAligner
 from keras.utils import to_categorical
 from skimage.io import imread
 from skimage.transform import resize
+from sklearn.model_selection import train_test_split
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
@@ -70,14 +71,14 @@ def zero_loss(y_true, y_pred):
 
 
 def train_resnet():
-    train_features, train_labels = get_files(train)
-    test_features, test_labels = get_files(test)
+    data_features, data_labels = get_files(data)
 
     global class_name_max
-    class_name_max = np.max([np.max(train_labels), np.max(test_labels)]) + 1
+    class_name_max = np.max([np.max(data_labels)]) + 1
 
-    training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
-    test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
+    x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.1, random_state=42)
+    training_generator = Generator(x_train, y_train, batch_size, class_name_max)
+    test_generator = Generator(x_test, y_test, batch_size, class_name_max)
 
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
@@ -203,16 +204,15 @@ def integration_test():
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('--train', type='string')
-    parser.add_option('--test', type='string', default='')
-    parser.add_option('--classes', type='int', default='16')
+    parser.add_option('--data', type='string')
+    parser.add_option('--classes', type='int', default=16)
     parser.add_option('--lr', type='float', default=1e-2)
     parser.add_option('--center', type='float', default=1e-3)
     parser.add_option('--k_r', type='float', default=0.)
     parser.add_option('--b_r', type='float', default=0.)
     parser.add_option('--batch', type='int', default=90)
     parser.add_option('--epochs', type='int', default=250)
-    parser.add_option('--verbose', type='int', default='1')
+    parser.add_option('--verbose', type='int', default=2)
     parser.add_option('--alpha', type='float', default=0.5)
     parser.add_option('--aug', action='store_true', dest='aug', default=False)
     parser.add_option('--arch', default='resnet')
@@ -231,8 +231,7 @@ if __name__ == '__main__':
     verbose = options.verbose
     arch = options.arch
     drop = options.drop
-    train = options.train
-    test = options.test
+    data = options.data
     weights = options.weights
 
     if options.mode == 'train':
