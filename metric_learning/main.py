@@ -69,6 +69,15 @@ def zero_loss(y_true, y_pred):
 
 
 def train_resnet():
+    train_features, train_labels = get_files(train)
+    test_features, test_labels = get_files(test)
+
+    global class_name_max
+    class_name_max = np.max(np.max(train_labels), np.max(test_labels))
+
+    training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
+    test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
+
     aux_input = Input((class_name_max,))
     resnet = create_resnet()
     main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
@@ -80,18 +89,12 @@ def train_resnet():
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
 
-    train_features, train_labels = get_files(train)
-    test_features, test_labels = get_files(test)
-
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, mode='max')
     callbacks = [checkpoint]
 
     if options.weights and os.path.exists(options.weights):
         model.load_weights(options.weights)
-
-    training_generator = Generator(train_features, train_labels, batch_size, class_name_max)
-    test_generator = Generator(test_features, test_labels, batch_size, class_name_max)
 
     model.fit_generator(
         training_generator,
