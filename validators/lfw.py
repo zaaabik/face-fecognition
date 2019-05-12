@@ -57,7 +57,7 @@ def add_extension(path):
 def main():
     pairs = read_pairs_file(options.pairs)
     pairs, positive = create_pairs(options.dataset, pairs)
-    resnet = Resnet34(0, 0, 128, 128, arch=arch)
+    resnet = Resnet34(128, 128, arch=arch)
     resnset = resnet.create_model()
     if not os.path.exists(options.weights):
         print('can not find weights')
@@ -85,7 +85,7 @@ def main():
     distanses = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
     positive = np.array(positive).flatten()
 
-    thresholds = np.array(np.arange(0, 1.5, options.step))
+    thresholds = np.array(np.arange(0, 10, options.step))
     thr = np.zeros((len(thresholds), len(positive)), dtype=float)
     for idx, val in enumerate(thresholds):
         thr[idx, :] = val
@@ -96,7 +96,6 @@ def main():
     for i in range(0, res.shape[0]):
         right_answers = (res[i] == positive).sum()
         accuracy = right_answers / count
-        print('accuracy: ', accuracy)
         thrs_acc.append(accuracy)
     thrs_acc = np.array(thrs_acc)
 
