@@ -3,6 +3,7 @@ import os
 
 import cv2
 import dlib
+import numpy as np
 from PIL import Image
 from imutils import face_utils
 from imutils.face_utils import FACIAL_LANDMARKS_68_IDXS
@@ -22,6 +23,7 @@ predictor = dlib.shape_predictor(predictor_data_path)
 
 def main():
     files = os.listdir(folder)
+    files = files[:1]
     for file in files:
         full_path = folder + sep + file
         image = cv2.imread(full_path)
@@ -36,7 +38,6 @@ def main():
 
             left_eye_pts = shape[lStart:lEnd]
             right_eye_pts = shape[rStart:rEnd]
-
             left_eye_center = left_eye_pts.mean(axis=0).astype("int")
             right_eye_center = right_eye_pts.mean(axis=0).astype("int")
 
@@ -49,7 +50,23 @@ def main():
             cv2.circle(image, tuple(right_eye_start), 2, (0, 255, 0), -1)
             cv2.circle(image, tuple(left_eye_end), 2, (0, 255, 0), -1)
 
-            glasses = Image.open('filters/glasses3.png')
+            mouth_top = shape[51]
+            cv2.circle(image, tuple(mouth_top), 2, (0, 255, 0), -1)
+
+            nose_bottom = shape[33]
+            cv2.circle(image, tuple(nose_bottom), 2, (0, 255, 0), -1)
+
+            mustache_pos = np.mean(shape[[33, 51]], axis=0).astype('int')
+            cv2.circle(image, tuple(mustache_pos), 2, (0, 0, 255), -1)
+
+            chin = shape[1]
+            print(chin)
+            print(mustache_pos)
+            cv2.circle(image, tuple(chin), 2, (255, 0, 0), -1)
+
+            glasses = Image.open('filters/glasses.png')
+            beard = Image.open('filters/beard.png').convert("RGBA")
+            beard = beard.resize((shape[8][1] - shape[1][1]), beard.size[1])
             glasses_width = left_eye_center[0] - right_eye_center[0]
 
             glasses_width = int((glasses_width / 2.5) * 5)
@@ -58,7 +75,9 @@ def main():
 
             face = Image.fromarray(image[:, :, ::-1])
             glasses_offset = right_eye_center[0] - int(glasses_width / 4.5), left_eye_center[1] - glasses_height // 2
+
             face.paste(glasses, glasses_offset, glasses)
+            face.paste(beard, glasses_offset, beard)
             face.show()
             # Show the image
         # cv2.imshow("Output", image)
