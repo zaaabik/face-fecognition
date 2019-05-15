@@ -1,6 +1,7 @@
 import optparse
 import os
 
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.io import imread
@@ -91,8 +92,10 @@ def main():
         thr[idx, :] = val
 
     res = (thr - distanses)
+    tmp_res = np.copy(res)
     res = np.where(res > 0, True, False)
     thrs_acc = []
+    false_answers = []
     for i in range(0, res.shape[0]):
         right_answers = (res[i] == positive).sum()
         accuracy = right_answers / count
@@ -100,6 +103,15 @@ def main():
     thrs_acc = np.array(thrs_acc)
 
     best_thr_arg = np.argmax(thrs_acc)
+
+    false_answers = res[best_thr_arg] == positive
+    tmp_res = tmp_res[best_thr_arg]
+    _counter = 0
+    for idx, false_answer in enumerate(false_answers):
+        if not false_answer:
+            save_wrong_answers(first_images[idx], second_inferences[idx], tmp_res[idx], _counter)
+            _counter += 1
+
     plt.ylabel('accuracy')
     plt.xlabel('thr')
     plt.plot(thresholds, thrs_acc)
@@ -114,6 +126,14 @@ def read_images(paths):
         image = np.array(resize(imread(path), (128, 128)))
         images.append(image)
     return np.array(images)
+
+
+def save_wrong_answers(img1, img2, dist, count):
+    folder_name = 'errors'
+    img1_name = f'{count} first_thr {dist}.jpg'
+    img2_name = f'{count} second_thr {dist}.jpg'
+    cv2.imwrite(os.path.join(folder_name, img1_name), img1)
+    cv2.imwrite(os.path.join(folder_name, img2_name), img2)
 
 
 if __name__ == '__main__':
