@@ -214,7 +214,7 @@ def test_centers():
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     model.load_weights(options.weights)
-    model_weights, biases = model.get_layer('centerlosslayer').get_weights()
+    model_weights = model.get_layer('centerlosslayer').get_weights()
     print(model_weights)
 
 
@@ -257,5 +257,5 @@ if __name__ == '__main__':
         find_distance(urls)
     elif options.mode == 'integr':
         integration_test()
-    elif options.mode == 'test centers':
+    elif options.mode == 'test_centers':
         test_centers()
