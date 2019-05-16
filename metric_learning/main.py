@@ -86,7 +86,8 @@ def train_resnet():
     l2_loss = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='l2_loss')(
         [resnet.output, centers])
 
-    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
+    main = Dense(class_name_max, use_bias=False, trainable=True, activation='softmax', name='main_out',
+                 kernel_initializer='orthogonal')(resnet.output)
     # side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
 
     model = Model(inputs=[resnet.input, input_target], outputs=[main, l2_loss])

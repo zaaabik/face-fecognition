@@ -110,9 +110,9 @@ def resnet_v2(input_shape, depth, out_size=128):
 
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
-    x = AveragePooling2D(pool_size=8)(x)
+    x = AveragePooling2D((7, 7), name='avg_pool')(x)
     y = Flatten()(x)
-    outputs = Dense(out_size, use_bias=False)(y)
+    outputs = Dense(out_size, activation='relu')(y)
 
     model = Model(inputs=inputs, outputs=outputs)
     return model
