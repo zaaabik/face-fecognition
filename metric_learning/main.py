@@ -218,7 +218,7 @@ def test_centers():
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     model.load_weights(options.weights)
-    model_weights = model.get_layer('centerlosslayer').get_weights()
+    model_weights = model.get_layer('l2_loss').get_weights()
     model_weights = np.array(model_weights)[0]
     mean_distance = []
     for idx, a in enumerate(model_weights):
