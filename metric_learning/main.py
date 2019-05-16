@@ -19,7 +19,7 @@ from tensorflow.python.keras.layers import Layer, Input
 from metric_learning.generator import Generator
 from metric_learning.resnet34 import Resnet34
 
-output_len = 512
+output_len = 128
 input_image_size = 128
 
 
