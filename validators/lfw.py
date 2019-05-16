@@ -4,7 +4,7 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from skimage.io import imread
+from skimage.io import imread, imsave
 from skimage.transform import resize
 
 from metric_learning.resnet34 import Resnet34
@@ -135,8 +135,8 @@ def save_wrong_answers(img1, img2, dist, count, is_positive):
         positive = 'false'
     img1_name = f'{count} first_thr {dist} {positive}.jpg'
     img2_name = f'{count} second_thr {dist} {positive}.jpg'
-    cv2.imwrite(os.path.join(folder_name, img1_name), (img1 * 255).astype(int))
-    cv2.imwrite(os.path.join(folder_name, img2_name), (img2 * 255).astype(int))
+    imsave(os.path.join(folder_name, img1_name), (img1 * 255).astype(int))
+    imsave(os.path.join(folder_name, img2_name), (img2 * 255).astype(int))
 
 
 if __name__ == '__main__':
