@@ -218,7 +218,7 @@ def test_centers():
     model_weights = np.array(model_weights)[0]
     mean_distance = []
     for idx, a in enumerate(model_weights):
-        tmp = a[np.arange(len(model_weights)) != idx]
+        tmp = np.hstack(model_weights[:idx], model_weights[idx + 1:])
         tmp = tmp - a
         tmp = np.linalg.norm(tmp, axis=1)
         tmp = np.mean(tmp)
