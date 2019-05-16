@@ -128,7 +128,7 @@ def read_images(paths):
 
 
 def save_wrong_answers(img1, img2, dist, count):
-    folder_name = 'errors'
+    folder_name = '/home/zabik/face-recognition/src/face-fecognition/validators/errors'
     img1_name = f'{count} first_thr {dist}.jpg'
     img2_name = f'{count} second_thr {dist}.jpg'
     print(img1.shape)
