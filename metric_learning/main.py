@@ -13,7 +13,7 @@ from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import ModelCheckpoint
-from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Dense, Embedding, Lambda
 from tensorflow.python.keras.layers import Layer, Input
 
 from metric_learning.generator import Generator
@@ -80,15 +80,19 @@ def train_resnet():
     training_generator = Generator(x_train, y_train, batch_size, class_name_max)
     test_generator = Generator(x_test, y_test, batch_size, class_name_max)
 
-    aux_input = Input((class_name_max,))
+    input_target = Input(shape=(1,))  # single value ground truth labels as inputs
     resnet = create_resnet()
-    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
-    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
+    centers = Embedding(class_name_max, output_len)(input_target)
+    l2_loss = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='l2_loss')(
+        [resnet.output, centers])
 
-    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
+    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
+    # side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
+
+    model = Model(inputs=[resnet.input, input_target], outputs=[main, l2_loss])
     optim = optimizers.Nadam()
     model.compile(optimizer=optim,
-                  loss=[losses.categorical_crossentropy, zero_loss],
+                  loss=[losses.sparse_categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
 
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
