@@ -221,7 +221,7 @@ def test_centers():
         tmp = np.linalg.norm(tmp, axis=1)
         tmp = np.mean(tmp, axis=1)
         mean_distance.append(tmp)
-    np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning', mean_distance)
+    np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/distance.txt', mean_distance)
 
 
 if __name__ == '__main__':
