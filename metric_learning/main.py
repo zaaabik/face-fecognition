@@ -202,6 +202,22 @@ def integration_test():
               )
 
 
+def test_centers():
+    aux_input = Input((class_name_max,))
+    resnet = create_resnet()
+    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
+    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
+
+    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
+    optim = optimizers.Nadam()
+    model.compile(optimizer=optim,
+                  loss=[losses.categorical_crossentropy, zero_loss],
+                  loss_weights=[1, center_weight], metrics=['accuracy'])
+    model.load_weights(options.weights)
+    model_weights, biases = model.get_layer('centerlosslayer').get_weights()
+    print(model_weights)
+
+
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('--data', type='string')
@@ -241,3 +257,5 @@ if __name__ == '__main__':
         find_distance(urls)
     elif options.mode == 'integr':
         integration_test()
+    elif options.mode == 'test centers':
+        test_centers()
