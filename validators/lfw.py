@@ -108,7 +108,7 @@ def main():
     _counter = 0
     for idx, false_answer in enumerate(false_answers):
         if not false_answer:
-            save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter)
+            save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
             _counter += 1
 
     plt.ylabel('accuracy')
@@ -127,13 +127,16 @@ def read_images(paths):
     return np.array(images)
 
 
-def save_wrong_answers(img1, img2, dist, count):
+def save_wrong_answers(img1, img2, dist, count, is_positive):
     folder_name = '/home/zabik/face-recognition/src/face-fecognition/validators/errors'
-    img1_name = f'{count} first_thr {dist}.jpg'
-    img2_name = f'{count} second_thr {dist}.jpg'
-    print(img1.shape)
-    cv2.imwrite(os.path.join(folder_name, img1_name), img1)
-    cv2.imwrite(os.path.join(folder_name, img2_name), img2)
+    if is_positive:
+        positive = 'positive'
+    else:
+        positive = 'false'
+    img1_name = f'{count} first_thr {dist} {positive}.jpg'
+    img2_name = f'{count} second_thr {dist} {positive}.jpg'
+    cv2.imwrite(os.path.join(folder_name, img1_name), (img1 * 255).astype(int))
+    cv2.imwrite(os.path.join(folder_name, img2_name), (img2 * 255).astype(int))
 
 
 if __name__ == '__main__':
