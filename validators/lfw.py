@@ -113,7 +113,7 @@ def main():
     _counter = 0
     for idx, false_answer in enumerate(false_answers):
         if not false_answer:
-            save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
+            # save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
             _counter += 1
 
     plt.ylabel('accuracy')
