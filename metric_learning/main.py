@@ -207,15 +207,19 @@ def integration_test():
 
 
 def test_centers():
-    aux_input = Input((class_name_max,))
+    input_target = Input(shape=(1,))  # single value ground truth labels as inputs
     resnet = create_resnet()
-    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
-    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
+    centers = Embedding(class_name_max, output_len)(input_target)
+    l2_loss = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='l2_loss')(
+        [resnet.output, centers])
 
-    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
+    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
+    # side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
+
+    model = Model(inputs=[resnet.input, input_target], outputs=[main, l2_loss])
     optim = optimizers.Nadam()
     model.compile(optimizer=optim,
-                  loss=[losses.categorical_crossentropy, zero_loss],
+                  loss=[losses.sparse_categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     model.load_weights(options.weights)
     model_weights = model.get_layer('l2_loss').get_weights()
