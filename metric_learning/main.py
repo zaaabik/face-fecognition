@@ -215,11 +215,13 @@ def test_centers():
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     model.load_weights(options.weights)
     model_weights = model.get_layer('centerlosslayer').get_weights()
+    model_weights = np.array(model_weights)[0]
     mean_distance = []
-    for a in model_weights:
-        tmp = model_weights - a
+    for idx, a in enumerate(model_weights):
+        tmp = model_weights.pop(idx)
+        tmp = tmp - a
         tmp = np.linalg.norm(tmp, axis=1)
-        tmp = np.mean(tmp, axis=1)
+        tmp = np.mean(tmp)
         mean_distance.append(tmp)
     np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/distance.txt', mean_distance)
 
