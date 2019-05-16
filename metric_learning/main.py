@@ -218,12 +218,14 @@ def test_centers():
     model_weights = np.array(model_weights)[0]
     mean_distance = []
     for idx, a in enumerate(model_weights):
-        tmp = np.hstack(model_weights[:idx], model_weights[idx + 1:])
+        tmp = np.copy(model_weights)
+        tmp = np.delete(tmp, idx, 0)
         tmp = tmp - a
         tmp = np.linalg.norm(tmp, axis=1)
-        tmp = np.mean(tmp)
+        tmp = np.min(tmp)
         mean_distance.append(tmp)
     np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/distance.txt', mean_distance)
+    np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/centers.txt', model_weights)
 
 
 if __name__ == '__main__':
