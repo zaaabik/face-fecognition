@@ -95,7 +95,6 @@ def main():
     tmp_res = np.copy(res)
     res = np.where(res > 0, True, False)
     thrs_acc = []
-    false_answers = []
     for i in range(0, res.shape[0]):
         right_answers = (res[i] == positive).sum()
         accuracy = right_answers / count
@@ -109,7 +108,7 @@ def main():
     _counter = 0
     for idx, false_answer in enumerate(false_answers):
         if not false_answer:
-            save_wrong_answers(first_images[idx], second_inferences[idx], tmp_res[idx], _counter)
+            save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter)
             _counter += 1
 
     plt.ylabel('accuracy')
@@ -132,6 +131,7 @@ def save_wrong_answers(img1, img2, dist, count):
     folder_name = 'errors'
     img1_name = f'{count} first_thr {dist}.jpg'
     img2_name = f'{count} second_thr {dist}.jpg'
+    print(img1.shape)
     cv2.imwrite(os.path.join(folder_name, img1_name), img1)
     cv2.imwrite(os.path.join(folder_name, img2_name), img2)
 
