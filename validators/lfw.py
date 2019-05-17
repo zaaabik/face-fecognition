@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage.io import imread, imsave
 from skimage.transform import resize
+from tensorflow.python.keras import Model
+from tensorflow.python.keras.backend import l2_normalize
+from tensorflow.python.keras.layers import Lambda
 
 from metric_learning.resnet34 import Resnet34
 
@@ -65,6 +68,8 @@ def main():
     else:
         print('weights are found')
         resnset.load_weights(options.weights, by_name=True)
+    l2_layer = Lambda(lambda x: l2_normalize(x, 1))(resnset.output)
+    resnset = Model(inputs=[resnset.input], outputs=[l2_layer])
     count = len(pairs)
     pairs = np.array(pairs)
     first_images = pairs[:, 0]
@@ -108,7 +113,7 @@ def main():
     _counter = 0
     for idx, false_answer in enumerate(false_answers):
         if not false_answer:
-            save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
+            # save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
             _counter += 1
 
     plt.ylabel('accuracy')

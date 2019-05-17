@@ -13,7 +13,7 @@ from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import ModelCheckpoint
-from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Dense, Embedding, Lambda
 from tensorflow.python.keras.layers import Layer, Input
 
 from metric_learning.generator import Generator
@@ -41,16 +41,16 @@ def create_resnet(image_size=None):
 class CenterLossLayer(Layer):
 
     def __init__(self, alpha=0.5, max_class=10, **kwargs):
-        super().__init__(**kwargs)
         self.alpha = alpha
         self.max_class = max_class
+        super(CenterLossLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
         self.centers = self.add_weight(name='centers',
                                        shape=(class_name_max, output_len),
                                        initializer='uniform',
                                        trainable=False)
-        super().build(input_shape)
+        super(CenterLossLayer, self).build(input_shape)
 
     def call(self, x, mask=None):
         delta_centers = K.dot(K.transpose(x[1]), (K.dot(x[1], self.centers) - x[0]))
@@ -76,16 +76,18 @@ def train_resnet():
     global class_name_max
     class_name_max = np.max([np.max(data_labels)]) + 1
 
-    x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.1, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.20, random_state=42)
     training_generator = Generator(x_train, y_train, batch_size, class_name_max)
     test_generator = Generator(x_test, y_test, batch_size, class_name_max)
 
-    aux_input = Input((class_name_max,))
     resnet = create_resnet()
-    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
-    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
 
-    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
+    input_target = Input(shape=(class_name_max,))  # single value ground truth labels as inputs
+    main = Dense(class_name_max, use_bias=False, trainable=True, activation='softmax', name='main_out',
+                 kernel_initializer='orthogonal')(resnet.output)
+    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, input_target])
+
+    model = Model(inputs=[resnet.input, input_target], outputs=[main, side])
     optim = optimizers.Nadam()
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
@@ -203,12 +205,14 @@ def integration_test():
 
 
 def test_centers():
-    aux_input = Input((class_name_max,))
     resnet = create_resnet()
-    main = Dense(class_name_max, activation='softmax', name='main_out', kernel_initializer='he_normal')(resnet.output)
-    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, aux_input])
 
-    model = Model(inputs=[resnet.input, aux_input], outputs=[main, side])
+    input_target = Input(shape=(class_name_max,))  # single value ground truth labels as inputs
+    main = Dense(class_name_max, use_bias=False, trainable=True, activation='softmax', name='main_out',
+                 kernel_initializer='orthogonal')(resnet.output)
+    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, input_target])
+
+    model = Model(inputs=[resnet.input, input_target], outputs=[main, side])
     optim = optimizers.Nadam()
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
@@ -222,7 +226,7 @@ def test_centers():
         tmp = np.delete(tmp, idx, 0)
         tmp = tmp - a
         tmp = np.linalg.norm(tmp, axis=1)
-        tmp = np.min(tmp)
+        tmp = np.mean(tmp)
         mean_distance.append(tmp)
     np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/distance.txt', mean_distance)
     np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/centers.txt', model_weights)
