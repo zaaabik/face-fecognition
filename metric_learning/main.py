@@ -221,7 +221,7 @@ def test_centers():
     model = Model(inputs=[resnet.input, input_target], outputs=[main, l2_loss])
     optim = optimizers.Nadam()
     model.compile(optimizer=optim,
-                  loss=[losses.sparse_categorical_crossentropy, zero_loss],
+                  loss=[losses.sparse_categorical_crossentropy, lambda y_true,y_pred: y_pred],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
     model.load_weights(options.weights)
     model_weights = model.get_layer('embedding').get_weights()
