@@ -112,7 +112,7 @@ def resnet_v2(input_shape, depth, out_size=128):
     x = Activation('relu')(x)
     x = AveragePooling2D((7, 7), name='avg_pool')(x)
     y = Flatten()(x)
-    outputs = Dense(out_size, activation='relu')(y)
+    outputs = Dense(out_size, use_bias=False)(y)
 
     model = Model(inputs=inputs, outputs=outputs)
     return model

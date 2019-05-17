@@ -22,7 +22,7 @@ class Generator(Sequence):
         batch_x = self.all_files[idx * b_s:(idx + 1) * b_s]
         batch_y = self.all_labels[idx * b_s:(idx + 1) * b_s]
 
-        # y_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
+        y_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
         images = np.array([
             np.array(resize(imread(file_name), (self.image_size, self.image_size)))
             for file_name in batch_x])
@@ -30,4 +30,4 @@ class Generator(Sequence):
 
         dummy = np.zeros((shape, 1))
 
-        return [images, batch_y], [batch_y, dummy]
+        return [images, y_labels], [y_labels, dummy]
