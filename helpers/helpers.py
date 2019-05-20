@@ -24,5 +24,5 @@ def get_images(image_paths, size):
 
 
 def get_image(image_path, size):
-    image = resize(imread(image_path), (size, size))
+    image = resize(imread(image_path), (size, size), anti_aliasing=True, mode='reflect') - 0.5
     return image
