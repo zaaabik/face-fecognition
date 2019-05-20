@@ -6,7 +6,7 @@ from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, BatchNormal
     GlobalAveragePooling2D, ZeroPadding2D, MaxPooling2D, AveragePooling2D, Flatten
 from tensorflow.python.keras.layers import add, AvgPool2D
 
-from metric_learning.resnet_arch import ResNet18
+from metric_learning.InceptionResnet import InceptionResNetV2
 
 default_drop = 0.05
 default_kernel_size = 3
@@ -315,12 +315,12 @@ class Resnet34:
         elif self.arch == 'test':
             print('test')
             return self.__test_model()
-        elif self.arch == 'test3':
-            print('test3')
-            return self.__test_model3()
         elif self.arch == 'resnet20':
             print('resnet20')
             return self.__resnet20()
+        elif self.arch == 'inception':
+            print('Inception')
+            return self.__inception_resnet()
 
     def __test_model(self):
         img_input = Input(shape=(self.input_size, self.input_size, 3))
@@ -359,11 +359,11 @@ class Resnet34:
         x = Dense(self.output_size)(x)
         return Model(img_input, x)
 
-    def __test_model3(self):
-        model = ResNet18((self.input_size, self.input_size, 3), 128, dropout=self.drop)
-        x = Dense(self.output_size)(model.output)
-        return Model(model.input, x)
-
     def __resnet20(self):
         model = resnet_v2((self.input_size, self.input_size, 3), 20, self.output_size)
+        return model
+
+    def __inception_resnet(self):
+        model = InceptionResNetV2(include_top=False, weights=None, input_shape=(self.input_size, self.input_size, 3),
+                                  pooling='avg')
         return model
