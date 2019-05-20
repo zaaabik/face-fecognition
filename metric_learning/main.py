@@ -13,7 +13,7 @@ from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import ModelCheckpoint
-from tensorflow.python.keras.layers import Dense, Embedding, Lambda
+from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.layers import Layer, Input
 
 from metric_learning.generator import Generator
@@ -21,16 +21,6 @@ from metric_learning.resnet34 import Resnet34
 
 output_len = 128
 input_image_size = 128
-
-
-def get_images(files):
-    images = []
-    for file in files:
-        img = cv2.imread(file)
-        img = cv2.resize(img, (input_image_size, input_image_size))
-        images.append(img)
-
-    return np.array(images)
 
 
 def create_resnet(image_size=None):
