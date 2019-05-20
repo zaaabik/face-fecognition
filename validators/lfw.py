@@ -10,6 +10,7 @@ from tensorflow.python.keras import Model
 from tensorflow.python.keras.backend import l2_normalize
 from tensorflow.python.keras.layers import Lambda
 
+from helpers.helpers import get_images
 from metric_learning.resnet34 import Resnet34
 
 
@@ -74,8 +75,8 @@ def main():
     pairs = np.array(pairs)
     first_images = pairs[:, 0]
     second_images = pairs[:, 1]
-    first_images = read_images(first_images)
-    second_images = read_images(second_images)
+    first_images = get_images(first_images, 128)
+    second_images = get_images(second_images, 128)
 
     first_inferences = resnset.predict(first_images)
     second_inferences = resnset.predict(second_images)

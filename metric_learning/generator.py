@@ -1,8 +1,8 @@
 import numpy as np
-from skimage.io import imread
-from skimage.transform import resize
 from tensorflow import keras
 from tensorflow.python.keras.utils import Sequence
+
+from helpers.helpers import get_images
 
 
 class Generator(Sequence):
@@ -23,9 +23,7 @@ class Generator(Sequence):
         batch_y = self.all_labels[idx * b_s:(idx + 1) * b_s]
 
         y_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
-        images = np.array([
-            np.array(resize(imread(file_name), (self.image_size, self.image_size)))
-            for file_name in batch_x])
+        images = get_images(batch_x, self.image_size)
         shape = np.array(batch_x).shape[0]
 
         dummy = np.zeros((shape, 1))
