@@ -104,9 +104,11 @@ def get_files(path):
     all_files = []
     all_labels = []
     folders = os.listdir(path)
+    folder_counter = 0
     for _, folder in enumerate(folders):
-        current_label = folder[1:]
-        current_label = int(current_label)
+        # current_label = folder[1:]
+        # current_label = int(current_label)
+        current_label = folder_counter
         if current_label >= class_name_max:
             continue
         cur = path + os.path.sep + folder
@@ -120,6 +122,7 @@ def get_files(path):
 
         files_count += current_folder_files_count
         all_files.extend(files)
+        folder_counter += 1
     return np.array(all_files), np.array(all_labels)
 
 
