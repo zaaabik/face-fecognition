@@ -319,7 +319,7 @@ class Resnet34:
             print('resnet20')
             return self.__resnet20()
         elif self.arch == 'inception':
-            print('Inception')
+            print('inception')
             return self.__inception_resnet()
 
     def __test_model(self):
