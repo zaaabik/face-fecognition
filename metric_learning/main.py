@@ -177,7 +177,7 @@ def integration_test():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
     y_train = to_categorical(y_train, num_classes)
     y_test = to_categorical(y_test, num_classes)
-    opt = optimizers.RMSprop()
+    opt = optimizers.RMSprop(lr=lr)
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=opt,
