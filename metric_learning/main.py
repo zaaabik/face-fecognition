@@ -22,6 +22,8 @@ from metric_learning.resnet34 import Resnet34
 output_len = 128
 input_image_size = 128
 
+K.clear_session()
+
 
 def create_resnet(image_size=None):
     resnet = Resnet34(image_size or input_image_size, output_len, drop=drop, arch=arch)
@@ -175,7 +177,7 @@ def integration_test():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
     y_train = to_categorical(y_train, num_classes)
     y_test = to_categorical(y_test, num_classes)
-    opt = optimizers.Nadam()
+    opt = optimizers.RMSprop()
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=opt,
