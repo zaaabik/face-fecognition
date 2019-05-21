@@ -18,12 +18,6 @@ from tensorflow.python.keras.layers import Lambda
 from tensorflow.python.keras.layers import MaxPooling2D
 from tensorflow.python.keras.models import Model
 
-def preprocess_input(x):
-    x /= 255.
-    x -= 0.5
-    x *= 2.
-    return x
-
 
 def conv2d_bn(x,
               filters,
