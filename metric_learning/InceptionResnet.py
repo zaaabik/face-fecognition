@@ -27,22 +27,6 @@ def conv2d_bn(x,
               activation='relu',
               use_bias=False,
               name=None):
-    """Utility function to apply conv + BN.
-
-    # Arguments
-        x: input tensor.
-        filters: filters in `Conv2D`.
-        kernel_size: kernel size as in `Conv2D`.
-        padding: padding mode in `Conv2D`.
-        activation: activation in `Conv2D`.
-        strides: strides in `Conv2D`.
-        name: name of the ops; will become `name + '_Activation'`
-            for the activation and `name + '_BatchNorm'` for the
-            batch norm layer.
-
-    # Returns
-        Output tensor after applying `Conv2D` and `BatchNormalization`.
-    """
     x = Conv2D(filters,
                kernel_size,
                strides=strides,
@@ -60,24 +44,6 @@ def conv2d_bn(x,
 
 
 def _generate_layer_name(name, branch_idx=None, prefix=None):
-    """Utility function for generating layer names.
-
-    If `prefix` is `None`, returns `None` to use default automatic layer names.
-    Otherwise, the returned layer name is:
-        - PREFIX_NAME if `branch_idx` is not given.
-        - PREFIX_Branch_0_NAME if e.g. `branch_idx=0` is given.
-
-    # Arguments
-        name: base layer name string, e.g. `'Concatenate'` or `'Conv2d_1x1'`.
-        branch_idx: an `int`. If given, will add e.g. `'Branch_0'`
-            after `prefix` and in front of `name` in order to identify
-            layers in the same block but in different branches.
-        prefix: string prefix that will be added in front of `name` to make
-            all layer names unique (e.g. which block this layer belongs to).
-
-    # Returns
-        The layer name.
-    """
     if prefix is None:
         return None
     if branch_idx is None:
@@ -86,34 +52,6 @@ def _generate_layer_name(name, branch_idx=None, prefix=None):
 
 
 def _inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
-    """Adds a Inception-ResNet block.
-
-    This function builds 3 types of Inception-ResNet blocks mentioned
-    in the paper, controlled by the `block_type` argument (which is the
-    block name used in the official TF-slim implementation):
-        - Inception-ResNet-A: `block_type='Block35'`
-        - Inception-ResNet-B: `block_type='Block17'`
-        - Inception-ResNet-C: `block_type='Block8'`
-
-    # Arguments
-        x: input tensor.
-        scale: scaling factor to scale the residuals before adding
-            them to the shortcut branch.
-        block_type: `'Block35'`, `'Block17'` or `'Block8'`, determines
-            the network structure in the residual branch.
-        block_idx: used for generating layer names.
-        activation: name of the activation function to use at the end
-            of the block (see [activations](../activations.md)).
-            When `activation=None`, no activation is applied
-            (i.e., "linear" activation: `a(x) = x`).
-
-    # Returns
-        Output tensor for the block.
-
-    # Raises
-        ValueError: if `block_type` is not one of `'Block35'`,
-            `'Block17'` or `'Block8'`.
-    """
     channel_axis = 1 if K.image_data_format() == 'channels_first' else 3
     if block_idx is None:
         prefix = None
