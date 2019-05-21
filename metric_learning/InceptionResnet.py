@@ -1,25 +1,8 @@
-# -*- coding: utf-8 -*-
-"""Inception-ResNet V2 model for Keras.
-
-Model naming and structure follows TF-slim implementation (which has some additional
-layers and different number of filters from the original arXiv paper):
-https://github.com/tensorflow/models/blob/master/research/slim/nets/inception_resnet_v2.py
-
-Pre-trained ImageNet weights are also converted from TF-slim, which can be found in:
-https://github.com/tensorflow/models/tree/master/research/slim#pre-trained-models
-
-# Reference
-- [Inception-v4, Inception-ResNet and the Impact of
-   Residual Connections on Learning](https://arxiv.org/abs/1602.07261)
-
-"""
 from __future__ import absolute_import
 from __future__ import print_function
 
-import warnings
 from functools import partial
 
-from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import Activation
@@ -30,29 +13,15 @@ from tensorflow.python.keras.layers import Conv2D
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.layers import Dropout
 from tensorflow.python.keras.layers import GlobalAveragePooling2D
-from tensorflow.python.keras.layers import GlobalMaxPooling2D
 from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras.layers import Lambda
 from tensorflow.python.keras.layers import MaxPooling2D
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.utils.data_utils import get_file
 
 BASE_WEIGHT_URL = 'https://github.com/myutwo150/keras-inception-resnet-v2/releases/download/v0.1/'
 
 
 def preprocess_input(x):
-    """Preprocesses a numpy array encoding a batch of images.
-
-    This function applies the "Inception" preprocessing which converts
-    the RGB values from [0, 255] to [-1, 1]. Note that this preprocessing
-    function is different from `imagenet_utils.preprocess_input()`.
-
-    # Arguments
-        x: a 4D numpy array consists of RGB values within [0, 255].
-
-    # Returns
-        Preprocessed array.
-    """
     x /= 255.
     x -= 0.5
     x *= 2.
@@ -202,90 +171,15 @@ def _inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
     return x
 
 
-def InceptionResNetV2(include_top=True,
-                      weights='imagenet',
-                      input_tensor=None,
-                      input_shape=None,
-                      pooling=None,
-                      classes=1000,
-                      dropout_keep_prob=0.8):
-    """Instantiates the Inception-ResNet v2 architecture.
-
-    Optionally loads weights pre-trained on ImageNet.
-    Note that when using TensorFlow, for best performance you should
-    set `"image_data_format": "channels_last"` in your Keras config
-    at `~/.keras/keras.json`.
-
-    The model and the weights are compatible with both TensorFlow and Theano.
-    The data format convention used by the model is the one specified in your
-    Keras config file.
-
-    Note that the default input image size for this model is 299x299, instead
-    of 224x224 as in the VGG16 and ResNet models. Also, the input preprocessing
-    function is different (i.e., do not use `imagenet_utils.preprocess_input()`
-    with this model. Use `preprocess_input()` defined in this module instead).
-
-    # Arguments
-        include_top: whether to include the fully-connected
-            layer at the top of the network.
-        weights: one of `None` (random initialization)
-            or `'imagenet'` (pre-training on ImageNet).
-        input_tensor: optional Keras tensor (i.e. output of `layers.Input()`)
-            to use as image input for the model.
-        input_shape: optional shape tuple, only to be specified
-            if `include_top` is `False` (otherwise the input shape
-            has to be `(299, 299, 3)` (with `channels_last` data format)
-            or `(3, 299, 299)` (with `channels_first` data format).
-            It should have exactly 3 inputs channels,
-            and width and height should be no smaller than 139.
-            E.g. `(150, 150, 3)` would be one valid value.
-        pooling: Optional pooling mode for feature extraction
-            when `include_top` is `False`.
-            - `None` means that the output of the model will be
-                the 4D tensor output of the last convolutional layer.
-            - `'avg'` means that global average pooling
-                will be applied to the output of the
-                last convolutional layer, and thus
-                the output of the model will be a 2D tensor.
-            - `'max'` means that global max pooling will be applied.
-        classes: optional number of classes to classify images
-            into, only to be specified if `include_top` is `True`, and
-            if no `weights` argument is specified.
-        dropout_keep_prob: dropout keep rate after pooling and before the
-            classification layer, only to be specified if `include_top` is `True`.
-
-    # Returns
-        A Keras `Model` instance.
-
-    # Raises
-        ValueError: in case of invalid argument for `weights`,
-            or invalid input shape.
-    """
-    if weights not in {'imagenet', None}:
-        raise ValueError('The `weights` argument should be either '
-                         '`None` (random initialization) or `imagenet` '
-                         '(pre-training on ImageNet).')
-
-    if weights == 'imagenet' and include_top and classes != 1000:
-        raise ValueError('If using `weights` as imagenet with `include_top`'
-                         ' as true, `classes` should be 1000')
-
-    # Determine proper input shape
+def InceptionResNetV2(input_shape=None):
     input_shape = _obtain_input_shape(
         input_shape,
         default_size=299,
         min_size=128,
         data_format=K.image_data_format(),
-        require_flatten=False,
-        weights=weights)
+        require_flatten=False)
 
-    if input_tensor is None:
-        img_input = Input(shape=input_shape)
-    else:
-        if not K.is_keras_tensor(input_tensor):
-            img_input = Input(tensor=input_tensor, shape=input_shape)
-        else:
-            img_input = input_tensor
+    img_input = Input(shape=input_shape)
 
     # Stem block: 35 x 35 x 192
     x = conv2d_bn(img_input, 32, 3, strides=2, padding='valid', name='Conv2d_1a_3x3')
@@ -396,55 +290,13 @@ def InceptionResNetV2(include_top=True,
     # Final convolution block
     x = conv2d_bn(x, 1536, 1, name='Conv2d_7b_1x1')
 
-    if include_top:
-        # Classification block
-        x = GlobalAveragePooling2D(name='AvgPool')(x)
-        x = Dropout(1.0 - dropout_keep_prob, name='Dropout')(x)
-        x = Dense(classes, name='Logits')(x)
-        x = Activation('softmax', name='Predictions')(x)
-    else:
-        if pooling == 'avg':
-            x = GlobalAveragePooling2D(name='AvgPool')(x)
-        elif pooling == 'max':
-            x = GlobalMaxPooling2D(name='MaxPool')(x)
+    x = GlobalAveragePooling2D(name='AvgPool')(x)
 
-    # Ensure that the model takes into account
-    # any potential predecessors of `input_tensor`
-    if input_tensor is not None:
-        inputs = get_source_inputs(input_tensor)
-    else:
-        inputs = img_input
+    inputs = img_input
 
     x = Dropout(0.2)(x)
     x = Dense(128, use_bias=False)(x)
 
-    # Create model
     model = Model(inputs, x, name='inception_resnet_v2')
-
-    # Load weights
-    if weights == 'imagenet':
-        if K.image_data_format() == 'channels_first':
-            if K.backend() == 'tensorflow':
-                warnings.warn('You are using the TensorFlow backend, yet you '
-                              'are using the Theano '
-                              'image data format convention '
-                              '(`image_data_format="channels_first"`). '
-                              'For best performance, set '
-                              '`image_data_format="channels_last"` in '
-                              'your Keras config '
-                              'at ~/.keras/keras.json.')
-        if include_top:
-            weights_filename = 'inception_resnet_v2_weights_tf_dim_ordering_tf_kernels.h5'
-            weights_path = get_file(weights_filename,
-                                    BASE_WEIGHT_URL + weights_filename,
-                                    cache_subdir='models',
-                                    md5_hash='e693bd0210a403b3192acc6073ad2e96')
-        else:
-            weights_filename = 'inception_resnet_v2_weights_tf_dim_ordering_tf_kernels_notop.h5'
-            weights_path = get_file(weights_filename,
-                                    BASE_WEIGHT_URL + weights_filename,
-                                    cache_subdir='models',
-                                    md5_hash='d19885ff4a710c122648d3b5c3b684e4')
-        model.load_weights(weights_path)
 
     return model
