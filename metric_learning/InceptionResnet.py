@@ -18,9 +18,6 @@ from tensorflow.python.keras.layers import Lambda
 from tensorflow.python.keras.layers import MaxPooling2D
 from tensorflow.python.keras.models import Model
 
-BASE_WEIGHT_URL = 'https://github.com/myutwo150/keras-inception-resnet-v2/releases/download/v0.1/'
-
-
 def preprocess_input(x):
     x /= 255.
     x -= 0.5

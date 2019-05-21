@@ -364,6 +364,5 @@ class Resnet34:
         return model
 
     def __inception_resnet(self):
-        model = InceptionResNetV2(include_top=False, weights=None, input_shape=(self.input_size, self.input_size, 3),
-                                  pooling='avg')
+        model = InceptionResNetV2((self.input_size, self.input_size, 3))
         return model
