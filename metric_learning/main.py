@@ -158,7 +158,7 @@ def test_distance(images, paths):
 
 def face_align(img):
     predictor = dlib.shape_predictor("../shape_predictor_68_face_landmarks.dat")
-    face_aligner = FaceAligner(predictor=predictor, desiredFaceHeight=128, desiredFaceWidth=128)
+    face_aligner = FaceAligner(predictor=predictor, desiredLeftEye=(0.315, 0.315), desiredFaceWidth=128)
     detector = dlib.get_frontal_face_detector()
 
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

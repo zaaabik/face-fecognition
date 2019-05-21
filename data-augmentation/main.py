@@ -1,19 +1,28 @@
 import optparse
 import os
+from multiprocessing.dummy import Pool as ThreadPool
 
 import cv2
 import dlib
+import numpy as np
 from PIL import Image
+from PIL import ImageFilter
 from imutils import face_utils
-from imutils.face_utils import FACIAL_LANDMARKS_68_IDXS
+
+from helpers.helpers import mkdir_p
 
 parser = optparse.OptionParser()
-parser.add_option("-f", "--folder")
-parser.add_option("-p", "--percent", default=100)
+parser.add_option("-i", "--input")
+parser.add_option("-o", "--output", type='string')
+parser.add_option("-c", "--cpu", type='int', default=4)
 (options, args) = parser.parse_args()
-folder = options.folder
+input_folder = options.input
+output_folder = options.output
+cpu = options.cpu
 
 sep = os.path.sep
+
+glass_prefix = '_glass_'
 
 detector = dlib.get_frontal_face_detector()
 predictor_data_path = '../shape_predictor_68_face_landmarks.dat'
@@ -21,49 +30,55 @@ predictor = dlib.shape_predictor(predictor_data_path)
 
 
 def main():
-    files = os.listdir(folder)
+    folders = os.listdir(input_folder)
+    aug_args = []
+
+    for folder in folders:
+        current_dir = os.path.join(input_folder, folder)
+        aug_args.append([current_dir, folder])
+
+    pool = ThreadPool(cpu)
+    pool.map(glass_augmentation_wrapper, aug_args)
+    pool.close()
+    pool.join()
+
+
+def glass_augmentation_wrapper(args):
+    return glass_augmentation(*args)
+
+
+def glass_augmentation(dir, folder):
+    files = os.listdir(dir)
+    mkdir_p(os.path.join(output_folder, folder))
     for file in files:
-        full_path = folder + sep + file
+        full_path = os.path.join(dir, file)
         image = cv2.imread(full_path)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         rects = detector(gray, 0)
-        for (i, rect) in enumerate(rects):
-            shape = predictor(gray, rect)
-            shape = face_utils.shape_to_np(shape)
+        if len(rects) == 0:
+            continue
+        rect = rects[0]
+        shape = predictor(gray, rect)
+        shape = face_utils.shape_to_np(shape)
+        w, h, y, x = get_glass_with_and_start(shape, gray.shape[0])
+        glasses = Image.open('filters/glasses.png').convert("RGBA")
+        glasses = glasses.resize((w, h), Image.ANTIALIAS)
+        glasses = glasses.filter(ImageFilter.SMOOTH_MORE)
+        face = Image.fromarray(image[:, :, ::-1])
+        glasses_offset = x, y
+        face.paste(glasses, glasses_offset, glasses)
+        face.save(os.path.join(output_folder, folder, glass_prefix + file))
 
-            (lStart, lEnd) = FACIAL_LANDMARKS_68_IDXS["left_eye"]
-            (rStart, rEnd) = FACIAL_LANDMARKS_68_IDXS["right_eye"]
 
-            left_eye_pts = shape[lStart:lEnd]
-            right_eye_pts = shape[rStart:rEnd]
-
-            left_eye_center = left_eye_pts.mean(axis=0).astype("int")
-            right_eye_center = right_eye_pts.mean(axis=0).astype("int")
-
-            left_eye_end = shape[rStart]
-            right_eye_start = shape[lEnd - 3]
-
-            cv2.circle(image, tuple(left_eye_center), 2, (0, 255, 0), -1)
-            cv2.circle(image, tuple(right_eye_center), 2, (0, 255, 0), -1)
-
-            cv2.circle(image, tuple(right_eye_start), 2, (0, 255, 0), -1)
-            cv2.circle(image, tuple(left_eye_end), 2, (0, 255, 0), -1)
-
-            glasses = Image.open('filters/glasses3.png')
-            glasses_width = left_eye_center[0] - right_eye_center[0]
-
-            glasses_width = int((glasses_width / 2.5) * 5)
-            glasses_height = glasses_width // 2
-            glasses = glasses.resize((glasses_width, glasses_height))
-
-            face = Image.fromarray(image[:, :, ::-1])
-            glasses_offset = right_eye_center[0] - int(glasses_width / 4.5), left_eye_center[1] - glasses_height // 2
-            face.paste(glasses, glasses_offset, glasses)
-            face.show()
-            # Show the image
-        # cv2.imshow("Output", image)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+def get_glass_with_and_start(shape, pic_width):
+    width = shape[16][0] - shape[0][0]
+    nose_mean = np.mean((shape[29][1])).astype(np.int)
+    up_glass_mean = np.mean((shape[19][1])).astype(np.int)
+    height = nose_mean - up_glass_mean
+    center = pic_width // 2
+    x = center - width // 2
+    y = int(up_glass_mean)
+    return width, height, y, x
 
 
 if __name__ == '__main__':
