@@ -69,7 +69,13 @@ def train_resnet():
     class_name_max = np.max([np.max(data_labels)]) + 1
 
     x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.20, random_state=42)
+    if aug is not None:
+        for folder in aug:
+            augment_data_features, augment_data_labels = get_files(folder, percent=percent)
+            x_train = np.append(x_train, augment_data_features)
+            y_train = np.append(y_train, augment_data_labels)
     training_generator = Generator(x_train, y_train, batch_size, class_name_max)
+
     test_generator = Generator(x_test, y_test, batch_size, class_name_max)
 
     resnet = create_resnet()
@@ -101,16 +107,16 @@ def train_resnet():
     )
 
 
-def get_files(path):
+def get_files(path, percent=100):
     files_count = 0
     all_files = []
     all_labels = []
     folders = os.listdir(path)
-    folder_counter = 0
+    count = int(len(folders) * (percent / 100))
+    folders = folders[:count]
     for _, folder in enumerate(folders):
-        # current_label = folder[1:]
-        # current_label = int(current_label)
-        current_label = folder_counter
+        current_label = folder[1:]
+        current_label = int(current_label)
         if current_label >= class_name_max:
             continue
         cur = path + os.path.sep + folder
@@ -124,7 +130,6 @@ def get_files(path):
 
         files_count += current_folder_files_count
         all_files.extend(files)
-        folder_counter += 1
     return np.array(all_files), np.array(all_labels)
 
 
@@ -239,9 +244,10 @@ if __name__ == '__main__':
     parser.add_option('--epochs', type='int', default=250)
     parser.add_option('--verbose', type='int', default=2)
     parser.add_option('--alpha', type='float', default=0.5)
-    parser.add_option('--aug', action='store_true', dest='aug', default=False)
     parser.add_option('--arch', default='resnet')
     parser.add_option('--weights', type='string')
+    parser.add_option('--aug', type='string')
+    parser.add_option('--percent', type='int', default=100)
     parser.add_option('--mode', type='string', default='train')
     parser.add_option('--urls', type='string')
     parser.add_option('--drop', type='float', default=0.)
@@ -258,6 +264,9 @@ if __name__ == '__main__':
     drop = options.drop
     data = options.data
     weights = options.weights
+    aug = options.aug
+    aug = aug.split(',')
+    percent = options.percent
 
     if options.mode == 'train':
         train_resnet()
