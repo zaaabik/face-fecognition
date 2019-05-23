@@ -27,6 +27,7 @@ glass_prefix = '_glass_'
 detector = dlib.get_frontal_face_detector()
 predictor_data_path = '../shape_predictor_68_face_landmarks.dat'
 predictor = dlib.shape_predictor(predictor_data_path)
+glass_max_count = 4
 
 
 def main():
@@ -61,7 +62,8 @@ def glass_augmentation(dir, folder):
         shape = predictor(gray, rect)
         shape = face_utils.shape_to_np(shape)
         w, h, y, x = get_glass_with_and_start(shape, gray.shape[0])
-        glasses = Image.open('filters/glasses.png').convert("RGBA")
+        random_number = np.random.randint(0, glass_max_count)
+        glasses = Image.open(f'filters/glasses{random_number}.png').convert("RGBA")
         glasses = glasses.resize((w, h), Image.ANTIALIAS)
         glasses = glasses.filter(ImageFilter.SMOOTH_MORE)
         face = Image.fromarray(image[:, :, ::-1])
