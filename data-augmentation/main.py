@@ -5,11 +5,14 @@ from multiprocessing.dummy import Pool as ThreadPool
 import cv2
 import dlib
 import numpy as np
+import pandas
 from PIL import Image
 from PIL import ImageFilter
 from imutils import face_utils
 
 from helpers.helpers import mkdir_p
+
+meta_path = 'meta/meta.csv'
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input")
@@ -28,15 +31,21 @@ detector = dlib.get_frontal_face_detector()
 predictor_data_path = '../shape_predictor_68_face_landmarks.dat'
 predictor = dlib.shape_predictor(predictor_data_path)
 glass_max_count = 4
+beard_max_count = 3
 
 
 def main():
     folders = os.listdir(input_folder)
-    aug_args = []
+    meta = parse_gender_info()
 
+    aug_args = []
     for folder in folders:
+        integer_folder = int(folder[1:])
+        print(folder)
+        wh = np.where(meta[:, 0] == integer_folder)
+        is_male = meta[wh[0][0], 1]
         current_dir = os.path.join(input_folder, folder)
-        aug_args.append([current_dir, folder])
+        aug_args.append([current_dir, folder, is_male])
 
     pool = ThreadPool(cpu)
     pool.map(glass_augmentation_wrapper, aug_args)
@@ -48,7 +57,7 @@ def glass_augmentation_wrapper(args):
     return glass_augmentation(*args)
 
 
-def glass_augmentation(dir, folder):
+def glass_augmentation(dir, folder, is_male):
     files = os.listdir(dir)
     mkdir_p(os.path.join(output_folder, folder))
     for file in files:
@@ -61,18 +70,39 @@ def glass_augmentation(dir, folder):
         rect = rects[0]
         shape = predictor(gray, rect)
         shape = face_utils.shape_to_np(shape)
-        w, h, y, x = get_glass_with_and_start(shape, gray.shape[0])
+        face = Image.fromarray(image[:, :, ::-1])
+
+        if is_male:
+            w, h, y, x = get_beard_size_and_start(shape, gray.shape[0])
+            random_number = np.random.randint(0, beard_max_count)
+            beard = Image.open(f'filters/beard{random_number}.png').convert("RGBA")
+            beard = beard.resize((w, h), Image.ANTIALIAS)
+            beard_offset = x, y
+            face.paste(beard, beard_offset, beard)
+
+        w, h, y, x = get_glass_size_and_start(shape, gray.shape[0])
+        glasses_offset = x, y
         random_number = np.random.randint(0, glass_max_count)
         glasses = Image.open(f'filters/glasses{random_number}.png').convert("RGBA")
         glasses = glasses.resize((w, h), Image.ANTIALIAS)
         glasses = glasses.filter(ImageFilter.SMOOTH_MORE)
-        face = Image.fromarray(image[:, :, ::-1])
-        glasses_offset = x, y
         face.paste(glasses, glasses_offset, glasses)
+
         face.save(os.path.join(output_folder, folder, glass_prefix + file))
 
 
-def get_glass_with_and_start(shape, pic_width):
+def parse_gender_info():
+    meta = pandas.read_csv(meta_path, quotechar=r'"', skipinitialspace=True)
+    meta['Class_ID'] = meta['Class_ID'].str.replace("n", '')
+    meta['Class_ID'] = meta['Class_ID'].astype(np.int)
+    meta['Gender'] = meta['Gender'].replace({'m': True, 'f': False})
+    meta = meta[['Class_ID', 'Gender']]
+    meta = meta.values
+    return meta
+
+
+# (x,y) start left top
+def get_glass_size_and_start(shape, pic_width):
     width = shape[16][0] - shape[0][0]
     nose_mean = np.mean((shape[29][1])).astype(np.int)
     up_glass_mean = np.mean((shape[19][1])).astype(np.int)
@@ -80,6 +110,14 @@ def get_glass_with_and_start(shape, pic_width):
     center = pic_width // 2
     x = center - width // 2
     y = int(up_glass_mean)
+    return width, height, y, x
+
+
+def get_beard_size_and_start(shape, pic_width):
+    height = shape[8][1] - shape[0][1]
+    width = shape[16][0] - shape[0][0]
+    x = shape[0][0]
+    y = shape[0][1]
     return width, height, y, x
 
 
