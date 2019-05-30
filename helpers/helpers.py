@@ -34,8 +34,13 @@ def parse_landmarks(path):
     with open(path) as file:
         feature_file = json.load(file)
         feature_file = feature_file['landmarks']
-        right_eye = feature_file['0']
+
+        right_eye = feature_file.get('0', None)
+        if right_eye is None:
+            raise AttributeError
         right_eye = right_eye['x'], right_eye['y']
-        left_eye = feature_file['1']
+        left_eye = feature_file.get('1', None)
+        if left_eye is None:
+            raise AttributeError
         left_eye = left_eye['x'], left_eye['y']
     return np.array(right_eye), np.array(left_eye)

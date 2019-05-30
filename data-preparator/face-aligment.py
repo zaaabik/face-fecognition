@@ -74,11 +74,14 @@ def align_image(file_path):
         img = cv2.imread(full_image_path)
         file_landmark_path = full_image_path + '.json'
 
+        aligned_face = img
         if os.path.isfile(file_landmark_path):
-            rights_eye, left_eye = parse_landmarks(file_landmark_path)
-            aligned_face = face_aligner.align(img, right=rights_eye, left=left_eye)
-        else:
-            aligned_face = img
+            try:
+                rights_eye, left_eye = parse_landmarks(file_landmark_path)
+                aligned_face = face_aligner.align(img, right=rights_eye, left=left_eye)
+            except AttributeError:
+                pass
+
         cv2.imwrite(output_file, aligned_face)
     except Exception as e:
         print(file_path)
