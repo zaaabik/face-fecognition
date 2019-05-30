@@ -5,9 +5,9 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 import cv2
 import dlib
-from imutils.face_utils import FaceAligner
 
-from helpers.helpers import mkdir_p
+from helpers.facealigner import FaceAligner
+from helpers.helpers import mkdir_p, parse_landmarks
 
 parser = optparse.OptionParser()
 parser.add_option('--path')
@@ -46,11 +46,8 @@ def align_folder():
             file_path = files_path + os.path.sep + file
             try:
                 img = cv2.imread(file_path)
-                img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                rects = detector(img_gray, 0)
-                if len(rects) == 1:
-                    aligned_face = face_aligner.align(img, img_gray, rects[0])
-                    cv2.imwrite(res_folder + os.path.sep + file, aligned_face)
+                parse_landmarks()
+                aligned_face = face_aligner.align(img, img_gray, None, )
             except Exception as e:
                 print(file_path)
                 print(str(e))
@@ -73,12 +70,13 @@ def align_image(file_path):
     output_file = os.path.join(out, file_path)
     mkdir_p(output_directory)
     try:
-        img = cv2.imread(os.path.join(path, file_path))
-        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        rects = detector(img_gray, 0)
-        if len(rects) == 1:
-            aligned_face = face_aligner.align(img, img_gray, rects[0])
-            cv2.imwrite(output_file, aligned_face)
+        full_image_path = os.path.join(path, file_path)
+        img = cv2.imread(full_image_path)
+        rights_eye, left_eye = parse_landmarks(full_image_path + '.json')
+        # cv2.circle(img, tuple(rights_eye.astype(int)), 1, (0, 0, 255), -1)
+        # cv2.circle(img, tuple(left_eye.astype(int)), 1, (0, 0, 255), -1)
+        aligned_face = face_aligner.align(img, right=rights_eye, left=left_eye)
+        cv2.imwrite(output_file, aligned_face)
     except Exception as e:
         print(file_path)
         print(str(e))
