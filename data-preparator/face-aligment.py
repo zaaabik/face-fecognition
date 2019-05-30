@@ -72,10 +72,13 @@ def align_image(file_path):
     try:
         full_image_path = os.path.join(path, file_path)
         img = cv2.imread(full_image_path)
-        rights_eye, left_eye = parse_landmarks(full_image_path + '.json')
-        # cv2.circle(img, tuple(rights_eye.astype(int)), 1, (0, 0, 255), -1)
-        # cv2.circle(img, tuple(left_eye.astype(int)), 1, (0, 0, 255), -1)
-        aligned_face = face_aligner.align(img, right=rights_eye, left=left_eye)
+        file_landmark_path = full_image_path + '.json'
+
+        if os.path.isfile(file_landmark_path):
+            rights_eye, left_eye = parse_landmarks(file_landmark_path)
+            aligned_face = face_aligner.align(img, right=rights_eye, left=left_eye)
+        else:
+            aligned_face = img
         cv2.imwrite(output_file, aligned_face)
     except Exception as e:
         print(file_path)
