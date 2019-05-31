@@ -79,8 +79,9 @@ def align_image(file_path):
             try:
                 rights_eye, left_eye = parse_landmarks(file_landmark_path)
                 aligned_face = face_aligner.align(img, right=rights_eye, left=left_eye)
-            except AttributeError:
-                pass
+            except AttributeError as e:
+                print(file_path)
+                print(e)
 
         cv2.imwrite(output_file, aligned_face)
     except Exception as e:

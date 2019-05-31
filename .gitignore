@@ -3,3 +3,4 @@
 */__pycache__/*
 *.h5
 *.jpg
+/scripts/face-recognition/*
