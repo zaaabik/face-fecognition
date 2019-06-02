@@ -46,8 +46,10 @@ def align_folder():
             file_path = files_path + os.path.sep + file
             try:
                 img = cv2.imread(file_path)
-                parse_landmarks()
-                aligned_face = face_aligner.align(img, img_gray, None, )
+                img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                rects = detector(img_gray, 0)
+                aligned_face = face_aligner.align(img, img_gray, rects[0])
+                cv2.imwrite(os.path.join(res_folder, file), aligned_face)
             except Exception as e:
                 print(file_path)
                 print(str(e))
