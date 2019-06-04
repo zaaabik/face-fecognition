@@ -274,7 +274,7 @@ if __name__ == '__main__':
     parser.add_option('--epochs', type='int', default=250)
     parser.add_option('--verbose', type='int', default=2)
     parser.add_option('--alpha', type='float', default=0.5)
-    parser.add_option('--arch', default='resnet')
+    parser.add_option('--arch', default='inception')
     parser.add_option('--weights', type='string')
     parser.add_option('--aug', type='string')
     parser.add_option('--percent', type='int', default=100)
