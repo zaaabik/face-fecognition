@@ -73,9 +73,9 @@ def train_resnet():
     if aug is not None:
         for folder in aug:
             augment_data_features, augment_data_labels = get_files(folder, percent=percent)
-            print("###################################################")
-            print("augmentated data count ",len(augment_data_features))
-            print("###################################################")
+            print("###################################################", flush=True)
+            print("augmentated data count ",len(augment_data_features), flush=True)
+            print("###################################################", flush=True)
             x_train = np.append(x_train, augment_data_features)
             y_train = np.append(y_train, augment_data_labels)
     training_generator = Generator(x_train, y_train, batch_size, class_name_max)
