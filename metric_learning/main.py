@@ -297,7 +297,8 @@ if __name__ == '__main__':
     weights = options.weights
     aug = options.aug
     thr = options.thr
-    aug = aug.split(',')
+    if aug is not None:
+        aug = aug.split(',')
     percent = options.percent
 
     if options.mode == 'train':
