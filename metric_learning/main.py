@@ -16,6 +16,7 @@ from tensorflow.python.keras.callbacks import ModelCheckpoint
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.layers import Layer, Input
 
+from helpers.helpers import get_image
 from metric_learning.generator import Generator
 from metric_learning.resnet34 import Resnet34
 
@@ -232,6 +233,33 @@ def test_centers():
     np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/centers.txt', model_weights)
 
 
+def evaluate():
+    resnet = create_resnet()
+    if (options.weights is not None) and os.path.exists(options.weights):
+        resnet.load_weights(options.weights, by_name=True)
+    else:
+        print("###########")
+        print("NO WEIGHTS")
+        print("###########")
+
+    data_features, data_labels = get_files(data)
+    images = []
+    for data_feature in data_features:
+        images.append(get_image(data_feature, 128))
+    images = np.array(images)
+    embedings = resnet.predict(images)
+    n = len(images)
+    right_answers = 0
+    for i in range(0, n):
+        for j in range(i, n):
+            dist = np.linalg.norm(embedings[i] - embedings[j])
+            is_same = dist < thr
+            is_right = data_labels[i] == data_labels[j]
+            right_answers += (is_right == is_same)
+
+    print((right_answers / n) * 100)
+
+
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('--data', type='string')
@@ -250,6 +278,7 @@ if __name__ == '__main__':
     parser.add_option('--percent', type='int', default=100)
     parser.add_option('--mode', type='string', default='train')
     parser.add_option('--urls', type='string')
+    parser.add_option('--thr', type='int')
     parser.add_option('--drop', type='float', default=0.)
 
     (options, args) = parser.parse_args()
@@ -265,6 +294,7 @@ if __name__ == '__main__':
     data = options.data
     weights = options.weights
     aug = options.aug
+    thr = options.thr
     aug = aug.split(',')
     percent = options.percent
 
@@ -277,3 +307,5 @@ if __name__ == '__main__':
         integration_test()
     elif options.mode == 'test_centers':
         test_centers()
+    elif options.mode == 'evaluate':
+        evaluate()
