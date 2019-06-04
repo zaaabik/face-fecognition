@@ -52,7 +52,7 @@ def align_folder():
                 cv2.imwrite(os.path.join(res_folder, file), aligned_face)
             except Exception as e:
                 print(file_path)
-                print(str(e))
+                print(e)
 
 
 def align_from_file():

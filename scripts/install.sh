@@ -1,13 +1,52 @@
-sudo add-apt-repository ppa:jonathonf/python-3.6
+apt-get install software-properties-common python-software-properties
+add-apt-repository ppa:jonathonf/python-3.6
 sudo apt-get update
-sudo apt-get install python3.6
+sudo apt-get install python3.6 python3-pip
+pip3 install --upgrade pip
+pip3 install boost
+
+sudo apt-get install build-essential cmake
+sudo apt-get install libgtk-3-dev
+sudo apt-get install libboost-all-dev
+sudo apt-get install cmake
+
+sudo apt-get install build-essential cmake pkg-config
+sudo apt-get install libx11-dev libatlas-base-dev
+sudo apt-get install libgtk-3-dev libboost-python-dev
+sudo apt-get install python-dev python-pip python3-dev python3-pip
+sudo apt-get install python3.6-dev
+sudo -H pip2 install -U pip numpy
+sudo -H pip3 install -U pip numpy
+
+wget http://dlib.net/files/dlib-19.6.tar.bz2
+tar xvf dlib-19.6.tar.bz2
+cd dlib-19.6/
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+sudo make install
+sudo ldconfig
+cd ..
+
+pkg-config --libs --cflags dlib-1
+
+cd dlib-19.6
+python setup.py install
+# clean up(this step is required if you want to build dlib for both Python2 and Python3)
+rm -rf dist
+rm -rf tools/python/build
+rm python_examples/dlib.so
+
+pip3 install dlib
 
 
-pip install virtualenv
+
+cd ..
+pip3 install virtualenv
 virtualenv face-recognition
 source face-recognition/bin/activate
-cd ..
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Add NVIDIA package repositories
 # Add HTTPS support for apt-key
