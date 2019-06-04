@@ -280,7 +280,7 @@ if __name__ == '__main__':
     parser.add_option('--percent', type='int', default=100)
     parser.add_option('--mode', type='string', default='train')
     parser.add_option('--urls', type='string')
-    parser.add_option('--thr', type='int')
+    parser.add_option('--thr', type='float')
     parser.add_option('--drop', type='float', default=0.)
 
     (options, args) = parser.parse_args()
