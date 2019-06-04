@@ -22,7 +22,7 @@ parser.add_option("-c", "--cpu", type='int', default=4)
 (options, args) = parser.parse_args()
 input_folder = options.input
 output_folder = options.output
-beard = options.beard
+add_beard = options.beard
 cpu = options.cpu
 
 sep = os.path.sep
@@ -74,7 +74,7 @@ def glass_augmentation(dir, folder, is_male):
         shape = face_utils.shape_to_np(shape)
         face = Image.fromarray(image[:, :, ::-1])
 
-        if is_male and beard:
+        if is_male and add_beard:
             w, h, y, x = get_beard_size_and_start(shape, gray.shape[0])
             random_number = np.random.randint(0, beard_max_count)
             beard = Image.open(f'filters/beard{random_number}.png').convert("RGBA")
