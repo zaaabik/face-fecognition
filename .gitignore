@@ -2,5 +2,5 @@
 /metric_learning/resnet2d.h5
 */__pycache__/*
 *.h5
-*.jpg
 /scripts/face-recognition/*
+/datasets/glass/*
