@@ -69,7 +69,7 @@ def train_resnet():
     global class_name_max
     class_name_max = np.max([np.max(data_labels)]) + 1
 
-    x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.20, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.07, random_state=42)
     if aug is not None:
         for folder in aug:
             augment_data_features, augment_data_labels = get_files(folder, percent=percent)
