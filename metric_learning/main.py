@@ -13,8 +13,8 @@ from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
 from tensorflow.python.keras.callbacks import ModelCheckpoint
-from tensorflow.python.keras.layers import Dense
-from tensorflow.python.keras.layers import Layer, Input
+from tensorflow.python.keras.layers import Layer, Input, Lambda, Dense
+from tensorflow.python.keras.backend import l2_normalize
 
 from helpers.helpers import get_image
 from metric_learning.generator import Generator
@@ -241,6 +241,8 @@ def evaluate():
         print("###########")
         print("NO WEIGHTS")
         print("###########")
+    l2_layer = Lambda(lambda x: l2_normalize(x, 1))(resnet.output)
+    resnet = Model(inputs=[resnet.input], outputs=[l2_layer])
 
     data_features, data_labels = get_files(data)
     images = []
