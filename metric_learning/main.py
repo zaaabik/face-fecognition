@@ -251,6 +251,7 @@ def evaluate():
     images = np.array(images)
     embedings = resnet.predict(images)
     n = len(images)
+    counter = 0
     right_answers = 0
     for i in range(0, n):
         for j in range(i, n):
@@ -258,8 +259,9 @@ def evaluate():
             is_same = dist < thr
             is_right = data_labels[i] == data_labels[j]
             right_answers += (is_right == is_same)
+            counter += 1
 
-    print((right_answers / n) * 100)
+    print((right_answers / counter) * 100)
 
 
 if __name__ == '__main__':
