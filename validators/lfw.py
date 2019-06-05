@@ -1,7 +1,6 @@
 import optparse
 import os
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.io import imread, imsave
@@ -121,6 +120,10 @@ def main():
     plt.xlabel('thr')
     plt.plot(thresholds, thrs_acc)
     plt.savefig('thrs')
+    np.savetxt('test.txt', np.array([
+        thresholds,
+        thrs_acc
+    ]))
     print('best thr ', thresholds[best_thr_arg])
     print('best accuracy', np.max(thrs_acc))
 
