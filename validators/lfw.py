@@ -156,6 +156,7 @@ def save_wrong_answers(img1, img2, dist, count, is_positive):
     plt.imshow(((img2 / 2 + 0.5) * 255).astype(int))
     name = f'{count} thr {dist} {positive}.jpg'
     plt.savefig(os.path.join(folder_name, name))
+    plt.clf()
 
 
 def save_right_answers(img1, img2, dist, count):
@@ -170,6 +171,7 @@ def save_right_answers(img1, img2, dist, count):
     plt.imshow(((img2 / 2 + 0.5) * 255).astype(int))
     name = f'{count} thr {dist}.jpg'
     plt.savefig(os.path.join(folder_name, name))
+    plt.clf()
 
 
 if __name__ == '__main__':
