@@ -3,7 +3,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from skimage.io import imread, imsave
+from skimage.io import imread
 from skimage.transform import resize
 from tensorflow.python.keras import Model
 from tensorflow.python.keras.backend import l2_normalize
@@ -111,10 +111,14 @@ def main():
     false_answers = res[best_thr_arg] == positive
     tmp_res = tmp_res[best_thr_arg]
     _counter = 0
+    _pos_counter = 0
     for idx, false_answer in enumerate(false_answers):
         if not false_answer:
             save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
             _counter += 1
+        else:
+            save_right_answers(first_images[idx], second_images[idx], tmp_res[idx], _pos_counter)
+            _pos_counter += 1
 
     plt.ylabel('accuracy')
     plt.xlabel('thr')
@@ -151,6 +155,20 @@ def save_wrong_answers(img1, img2, dist, count, is_positive):
     plt.axis('off')
     plt.imshow((img2 * 255).astype(int))
     name = f'{count} thr {dist} {positive}.jpg'
+    plt.savefig(os.path.join(folder_name, name))
+
+
+def save_right_answers(img1, img2, dist, count):
+    folder_name = '/home/root/lfw_ok'
+    mkdir_p(folder_name)
+    f = plt.figure()
+    f.add_subplot(1, 2, 1)
+    plt.axis('off')
+    plt.imshow((img1 * 255).astype(int))
+    f.add_subplot(1, 2, 2)
+    plt.axis('off')
+    plt.imshow((img2 * 255).astype(int))
+    name = f'{count} thr {dist}.jpg'
     plt.savefig(os.path.join(folder_name, name))
 
 
