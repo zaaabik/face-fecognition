@@ -90,7 +90,7 @@ def train_resnet():
     side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, input_target])
 
     model = Model(inputs=[resnet.input, input_target], outputs=[main, side])
-    optim = optimizers.RMSprop(lr=lr)
+    optim = optimizers.Adam(lr=lr, amsgrad=True)
     model.compile(optimizer=optim,
                   loss=[losses.categorical_crossentropy, zero_loss],
                   loss_weights=[1, center_weight], metrics=['accuracy'])
