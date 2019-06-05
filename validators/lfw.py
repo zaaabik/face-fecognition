@@ -143,10 +143,15 @@ def save_wrong_answers(img1, img2, dist, count, is_positive):
         positive = 'positive'
     else:
         positive = 'false'
-    img1_name = f'{count} first_thr {dist} {positive}.jpg'
-    img2_name = f'{count} second_thr {dist} {positive}.jpg'
-    imsave(os.path.join(folder_name, img1_name), (img1 * 255).astype(int))
-    imsave(os.path.join(folder_name, img2_name), (img2 * 255).astype(int))
+    f = plt.figure()
+    f.add_subplot(1, 2, 1)
+    plt.axis('off')
+    plt.imshow((img1 * 255).astype(int))
+    f.add_subplot(1, 2, 2)
+    plt.axis('off')
+    plt.imshow((img2 * 255).astype(int))
+    name = f'{count} thr {dist} {positive}.jpg'
+    plt.savefig(os.path.join(folder_name, name))
 
 
 if __name__ == '__main__':
