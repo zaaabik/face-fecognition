@@ -9,7 +9,7 @@ from tensorflow.python.keras import Model
 from tensorflow.python.keras.backend import l2_normalize
 from tensorflow.python.keras.layers import Lambda
 
-from helpers.helpers import get_images
+from helpers.helpers import get_images, mkdir_p
 from metric_learning.resnet34 import Resnet34
 
 
@@ -113,7 +113,7 @@ def main():
     _counter = 0
     for idx, false_answer in enumerate(false_answers):
         if not false_answer:
-            # save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
+            save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
             _counter += 1
 
     plt.ylabel('accuracy')
@@ -137,7 +137,8 @@ def read_images(paths):
 
 
 def save_wrong_answers(img1, img2, dist, count, is_positive):
-    folder_name = '/home/zabik/face-recognition/src/face-fecognition/validators/errors'
+    folder_name = '/home/root/lfw_errors'
+    mkdir_p(folder_name)
     if is_positive:
         positive = 'positive'
     else:
