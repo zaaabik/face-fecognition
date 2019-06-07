@@ -256,15 +256,24 @@ def evaluate():
     n = len(images)
     counter = 0
     right_answers = 0
+    fp = 0
+    fn = 0
     for i in range(0, n):
         for j in range(i, n):
             dist = np.linalg.norm(embedings[i] - embedings[j])
             is_same = dist < thr
             is_right = data_labels[i] == data_labels[j]
             right_answers += (is_right == is_same)
+            if is_right and not is_same:
+                fp += 1
+            elif not is_right and is_same:
+                fn += 1
+
             counter += 1
 
-    print((right_answers / counter) * 100)
+    print('accuracy ', (right_answers / counter) * 100)
+    print('fp', (fp / counter) * 100)
+    print('fn', (fn / counter) * 100)
 
 
 if __name__ == '__main__':
