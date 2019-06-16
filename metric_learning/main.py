@@ -4,6 +4,7 @@ import os
 import cv2
 import dlib
 import numpy as np
+import tensorflow as tf
 from imutils.face_utils import FaceAligner
 from keras.utils import to_categorical
 from skimage.io import imread
@@ -12,9 +13,9 @@ from sklearn.model_selection import train_test_split
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import optimizers, losses
+from tensorflow.python.keras.backend import l2_normalize
 from tensorflow.python.keras.callbacks import ModelCheckpoint
 from tensorflow.python.keras.layers import Layer, Input, Lambda, Dense
-from tensorflow.python.keras.backend import l2_normalize
 
 from helpers.helpers import get_image
 from metric_learning.generator import Generator
@@ -31,39 +32,37 @@ def create_resnet(image_size=None):
     return resnet.create_model()
 
 
-class CenterLossLayer(Layer):
-
-    def __init__(self, alpha=0.5, max_class=10, **kwargs):
-        self.alpha = alpha
+class ArcFace(Layer):
+    def __init__(self, m=0.5, s=16, max_class=10, **kwargs):
+        self.m = m
+        self.s = s
         self.max_class = max_class
-        super(CenterLossLayer, self).__init__(**kwargs)
+        super(ArcFace, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.centers = self.add_weight(name='centers',
-                                       shape=(class_name_max, output_len),
-                                       initializer='uniform',
-                                       trainable=False)
-        super(CenterLossLayer, self).build(input_shape)
+        self.W = self.add_weight(name='W',
+                                 shape=(output_len, class_name_max),
+                                 initializer='glorot_uniform',
+                                 trainable=True)
+        super(ArcFace, self).build(input_shape)
 
-    def call(self, x, mask=None):
-        delta_centers = K.dot(K.transpose(x[1]), (K.dot(x[1], self.centers) - x[0]))
-        center_counts = K.sum(K.transpose(x[1]), axis=1, keepdims=True) + 1
-        delta_centers /= center_counts
-        new_centers = self.centers - self.alpha * delta_centers
-        self.add_update((self.centers, new_centers), x)
-        self.result = x[0] - K.dot(x[1], self.centers)
-        self.result = K.sum(self.result ** 2, axis=1, keepdims=True)
+    def call(self, input, mask=None):
+        x, y = input
+        x = K.l2_normalize(x, axis=1)
+        w = K.l2_normalize(self.W, axis=0)
+        logits = x @ w
+        theta = tf.acos(K.clip(logits, -1.0 + K.epsilon(), 1.0 - K.epsilon()))
+        target_logits = tf.cos(theta + self.m)
+        logits = logits * (1 - y) + target_logits * y
+        logits *= self.s
+        self.result = tf.nn.softmax(logits)
         return self.result
 
     def compute_output_shape(self, input_shape):
         return K.int_shape(self.result)
 
 
-def zero_loss(y_true, y_pred):
-    return 0.5 * K.sum(y_pred, axis=0)
-
-
-def train_resnet():
+def train_cnn():
     data_features, data_labels = get_files(data)
 
     global class_name_max
@@ -74,7 +73,7 @@ def train_resnet():
         for folder in aug:
             augment_data_features, augment_data_labels = get_files(folder, percent=percent)
             print("###################################################", flush=True)
-            print("augmentated data count ",len(augment_data_features), flush=True)
+            print("augmentated data count ", len(augment_data_features), flush=True)
             print("###################################################", flush=True)
             x_train = np.append(x_train, augment_data_features)
             y_train = np.append(y_train, augment_data_labels)
@@ -83,17 +82,13 @@ def train_resnet():
     test_generator = Generator(x_test, y_test, batch_size, class_name_max)
 
     resnet = create_resnet()
-
-    input_target = Input(shape=(class_name_max,))  # single value ground truth labels as inputs
-    main = Dense(class_name_max, use_bias=False, trainable=True, activation='softmax', name='main_out',
-                 kernel_initializer='he_normal')(resnet.output)
-    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, input_target])
-
-    model = Model(inputs=[resnet.input, input_target], outputs=[main, side])
-    optim = optimizers.Adam(lr=lr, amsgrad=True)
+    input_target = Input(shape=(class_name_max,))
+    arcface = ArcFace(name='centerlosslayer', max_class=class_name_max)([resnet.output, input_target])
+    model = Model(inputs=[resnet.input, input_target], outputs=[arcface])
+    optim = optimizers.RMSprop()
     model.compile(optimizer=optim,
-                  loss=[losses.categorical_crossentropy, zero_loss],
-                  loss_weights=[1, center_weight], metrics=['accuracy'])
+                  loss=losses.categorical_crossentropy,
+                  metrics=['accuracy'])
 
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, mode='max')
@@ -208,34 +203,6 @@ def integration_test():
               )
 
 
-def test_centers():
-    resnet = create_resnet()
-
-    input_target = Input(shape=(class_name_max,))  # single value ground truth labels as inputs
-    main = Dense(class_name_max, use_bias=False, trainable=True, activation='softmax', name='main_out',
-                 kernel_initializer='orthogonal')(resnet.output)
-    side = CenterLossLayer(name='centerlosslayer', max_class=class_name_max)([resnet.output, input_target])
-
-    model = Model(inputs=[resnet.input, input_target], outputs=[main, side])
-    optim = optimizers.Nadam()
-    model.compile(optimizer=optim,
-                  loss=[losses.categorical_crossentropy, zero_loss],
-                  loss_weights=[1, center_weight], metrics=['accuracy'])
-    model.load_weights(options.weights)
-    model_weights = model.get_layer('centerlosslayer').get_weights()
-    model_weights = np.array(model_weights)[0]
-    mean_distance = []
-    for idx, a in enumerate(model_weights):
-        tmp = np.copy(model_weights)
-        tmp = np.delete(tmp, idx, 0)
-        tmp = tmp - a
-        tmp = np.linalg.norm(tmp, axis=1)
-        tmp = np.mean(tmp)
-        mean_distance.append(tmp)
-    np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/distance.txt', mean_distance)
-    np.savetxt('/home/zabik/face-recognition/src/face-fecognition/metric_learning/centers.txt', model_weights)
-
-
 def evaluate():
     resnet = create_resnet()
     if (options.weights is not None) and os.path.exists(options.weights):
@@ -281,7 +248,8 @@ if __name__ == '__main__':
     parser.add_option('--data', type='string')
     parser.add_option('--classes', type='int', default=16)
     parser.add_option('--lr', type='float', default=1e-2)
-    parser.add_option('--center', type='float', default=1e-3)
+    parser.add_option('--m', type='float', default=0.5)
+    parser.add_option('--s', type='float', default=64)
     parser.add_option('--k_r', type='float', default=0.)
     parser.add_option('--b_r', type='float', default=0.)
     parser.add_option('--batch', type='int', default=90)
@@ -300,11 +268,12 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     lr = options.lr
-    center_weight = options.center
     batch_size = options.batch
     epochs = options.epochs
     class_name_max = options.classes
     verbose = options.verbose
+    s = options.s
+    m = options.m
     arch = options.arch
     drop = options.drop
     data = options.data
@@ -316,13 +285,11 @@ if __name__ == '__main__':
     percent = options.percent
 
     if options.mode == 'train':
-        train_resnet()
+        train_cnn()
     elif options.mode == 'test':
         urls = options.urls.split(',')
         find_distance(urls)
     elif options.mode == 'integr':
         integration_test()
-    elif options.mode == 'test_centers':
-        test_centers()
     elif options.mode == 'evaluate':
         evaluate()

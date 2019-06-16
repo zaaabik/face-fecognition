@@ -223,7 +223,7 @@ def InceptionResNetV2(input_shape=None):
 
     inputs = img_input
 
-    x = Dropout(0.4)(x)
+    x = Dropout(0.2)(x)
     x = Dense(128, use_bias=False)(x)
 
     model = Model(inputs, x, name='inception_resnet_v2')

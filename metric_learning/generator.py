@@ -24,8 +24,5 @@ class Generator(Sequence):
 
         y_labels = keras.utils.to_categorical(np.array(batch_y), self.classes_count)
         images = get_images(batch_x, self.image_size)
-        shape = np.array(batch_x).shape[0]
 
-        dummy = np.zeros((shape, 1))
-
-        return [images, y_labels], [y_labels, dummy]
+        return [images, y_labels], [y_labels]
