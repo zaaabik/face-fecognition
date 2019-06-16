@@ -68,6 +68,10 @@ def verify(class_count):
     arcface = ArcFace(m_param=m, s_param=s, name='centerlosslayer', max_class=class_count)(
         [resnet.output, input_target])
     model = Model(inputs=[resnet.input, input_target], outputs=[arcface])
+    optim = optimizers.RMSprop()
+    model.compile(optimizer=optim,
+                  loss=losses.categorical_crossentropy,
+                  metrics=['accuracy'])
     model.load_weights(options.weights, by_name=True)
     data_features, data_labels = get_files(data)
     global class_name_max
