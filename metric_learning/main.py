@@ -33,9 +33,9 @@ def create_resnet(image_size=None):
 
 
 class ArcFace(Layer):
-    def __init__(self, m=0.5, s=16, max_class=10, **kwargs):
-        self.m = m
-        self.s = s
+    def __init__(self, m_param=0.5, s_param=16, max_class=10, **kwargs):
+        self.m = m_param
+        self.s = s_param
         self.max_class = max_class
         super(ArcFace, self).__init__(**kwargs)
 
@@ -83,7 +83,8 @@ def train_cnn():
 
     resnet = create_resnet()
     input_target = Input(shape=(class_name_max,))
-    arcface = ArcFace(name='centerlosslayer', max_class=class_name_max)([resnet.output, input_target])
+    arcface = ArcFace(m_param=m, s_param=s, name='centerlosslayer', max_class=class_name_max)(
+        [resnet.output, input_target])
     model = Model(inputs=[resnet.input, input_target], outputs=[arcface])
     optim = optimizers.RMSprop()
     model.compile(optimizer=optim,

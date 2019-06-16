@@ -13,6 +13,26 @@ from helpers.helpers import get_images, mkdir_p
 from metric_learning.resnet34 import Resnet34
 
 
+def cosin_metric(x1, x2):
+    return np.dot(x1, x2) / (np.linalg.norm(x1) * np.linalg.norm(x2))
+
+
+def cal_accuracy(y_score, y_true):
+    y_score = np.asarray(y_score)
+    y_true = np.asarray(y_true)
+    best_acc = 0
+    best_th = 0
+    for i in range(len(y_score)):
+        th = y_score[i]
+        y_test = (y_score >= th)
+        acc = np.mean((y_test == y_true).astype(int))
+        if acc > best_acc:
+            best_acc = acc
+            best_th = th
+
+    return (best_acc, best_th)
+
+
 def read_pairs_file(path):
     pairs = []
     with open(path, 'r') as f:
@@ -70,7 +90,6 @@ def main():
         resnset.load_weights(options.weights, by_name=True)
     l2_layer = Lambda(lambda x: l2_normalize(x, 1))(resnset.output)
     resnset = Model(inputs=[resnset.input], outputs=[l2_layer])
-    count = len(pairs)
     pairs = np.array(pairs)
     first_images = pairs[:, 0]
     second_images = pairs[:, 1]
@@ -88,48 +107,15 @@ def main():
         first_inferences = (first_inferences + first_inferences_flipped) / 2
         second_inferences = (second_inferences + second_inferences_flipped) / 2
 
-    distanses = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
-    positive = np.array(positive).flatten()
+    # distances = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
+    distances = []
+    for u, v in zip(first_inferences, second_inferences):
+        distances.append(cosin_metric(u, v))
+    is_same = np.array(positive).flatten()
 
-    thresholds = np.array(np.arange(0, 2.5, options.step))
-    thr = np.zeros((len(thresholds), len(positive)), dtype=float)
-    for idx, val in enumerate(thresholds):
-        thr[idx, :] = val
-
-    res = (thr - distanses)
-    tmp_res = np.copy(res)
-    res = np.where(res > 0, True, False)
-    thrs_acc = []
-    for i in range(0, res.shape[0]):
-        right_answers = (res[i] == positive).sum()
-        accuracy = right_answers / count
-        thrs_acc.append(accuracy)
-    thrs_acc = np.array(thrs_acc)
-
-    best_thr_arg = np.argmax(thrs_acc)
-
-    false_answers = res[best_thr_arg] == positive
-    tmp_res = tmp_res[best_thr_arg]
-    _counter = 0
-    _pos_counter = 0
-    for idx, false_answer in enumerate(false_answers):
-        if not false_answer:
-            save_wrong_answers(first_images[idx], second_images[idx], tmp_res[idx], _counter, positive[idx])
-            _counter += 1
-        else:
-            save_right_answers(first_images[idx], second_images[idx], tmp_res[idx], _pos_counter)
-            _pos_counter += 1
-
-    plt.ylabel('accuracy')
-    plt.xlabel('thr')
-    plt.plot(thresholds, thrs_acc)
-    plt.savefig('thrs')
-    np.savetxt('test.txt', np.array([
-        thresholds,
-        thrs_acc
-    ]))
-    print('best thr ', thresholds[best_thr_arg])
-    print('best accuracy', np.max(thrs_acc))
+    best_acc, best_th = cal_accuracy(distances, is_same)
+    print('best acc', best_acc)
+    print('best thr', best_th)
 
 
 def read_images(paths):
