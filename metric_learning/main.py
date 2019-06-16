@@ -91,7 +91,7 @@ def train_cnn():
                   loss=losses.categorical_crossentropy,
                   metrics=['accuracy'])
 
-    filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_main_out_acc:.2f}.hdf5"
+    filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, mode='max')
     callbacks = [checkpoint]
 
