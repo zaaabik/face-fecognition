@@ -62,6 +62,29 @@ class ArcFace(Layer):
         return K.int_shape(self.result)
 
 
+def verify():
+    resnet = create_resnet()
+    input_target = Input(shape=(class_name_max,))
+    arcface = ArcFace(m_param=m, s_param=s, name='centerlosslayer', max_class=class_name_max)(
+        [resnet.output, input_target])
+    model = Model(inputs=[resnet.input, input_target], outputs=[arcface])
+    model.load_weights(options.weights, by_name=True)
+    data_features, data_labels = get_files(data)
+    global class_name_max
+    class_name_max = np.max([np.max(data_labels)]) + 1
+    x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.07, random_state=42)
+    training_generator = Generator(x_train, y_train, batch_size, class_name_max)
+    test_generator = Generator(x_test, y_test, batch_size, class_name_max)
+    res = model.evaluate_generator(training_generator)
+    print('training')
+    print(res[0])
+    print(res[1])
+    res = model.evaluate_generator(test_generator)
+    print('test')
+    print(res[0])
+    print(res[1])
+
+
 def train_cnn():
     data_features, data_labels = get_files(data)
 
@@ -287,6 +310,8 @@ if __name__ == '__main__':
 
     if options.mode == 'train':
         train_cnn()
+    elif options.mode == 'verify':
+        verify()
     elif options.mode == 'test':
         urls = options.urls.split(',')
         find_distance(urls)
