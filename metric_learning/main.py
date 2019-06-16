@@ -41,7 +41,7 @@ class ArcFace(Layer):
 
     def build(self, input_shape):
         self.W = self.add_weight(name='W',
-                                 shape=(output_len, class_name_max),
+                                 shape=(output_len, self.max_class),
                                  initializer='glorot_uniform',
                                  trainable=True)
         super(ArcFace, self).build(input_shape)
@@ -62,10 +62,10 @@ class ArcFace(Layer):
         return K.int_shape(self.result)
 
 
-def verify():
+def verify(class_count):
     resnet = create_resnet()
-    input_target = Input(shape=(class_name_max,))
-    arcface = ArcFace(m_param=m, s_param=s, name='centerlosslayer', max_class=class_name_max)(
+    input_target = Input(shape=(class_count,))
+    arcface = ArcFace(m_param=m, s_param=s, name='centerlosslayer', max_class=class_count)(
         [resnet.output, input_target])
     model = Model(inputs=[resnet.input, input_target], outputs=[arcface])
     model.load_weights(options.weights, by_name=True)
@@ -73,8 +73,8 @@ def verify():
     global class_name_max
     class_name_max = np.max([np.max(data_labels)]) + 1
     x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.07, random_state=42)
-    training_generator = Generator(x_train, y_train, batch_size, class_name_max)
-    test_generator = Generator(x_test, y_test, batch_size, class_name_max)
+    training_generator = Generator(x_train, y_train, batch_size, class_count)
+    test_generator = Generator(x_test, y_test, batch_size, class_count)
     res = model.evaluate_generator(training_generator)
     print('training')
     print(res[0])
@@ -311,7 +311,7 @@ if __name__ == '__main__':
     if options.mode == 'train':
         train_cnn()
     elif options.mode == 'verify':
-        verify()
+        verify(class_name_max)
     elif options.mode == 'test':
         urls = options.urls.split(',')
         find_distance(urls)
