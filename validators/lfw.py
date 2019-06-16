@@ -110,7 +110,9 @@ def main():
     # distances = np.linalg.norm(first_inferences - second_inferences, axis=1).flatten()
     distances = []
     for u, v in zip(first_inferences, second_inferences):
-        distances.append(cosin_metric(u, v))
+        metric = cosin_metric(u, v)
+        print(metric)
+        distances.append(metric)
     is_same = np.array(positive).flatten()
 
     best_acc, best_th = cal_accuracy(distances, is_same)
