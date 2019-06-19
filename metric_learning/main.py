@@ -80,6 +80,7 @@ def verify(class_count):
     training_generator = Generator(x_train, y_train, batch_size, class_count)
     test_generator = Generator(x_test, y_test, batch_size, class_count)
     centers = model.get_layer('centerlosslayer').get_weights()[0].T
+    centers /= np.linalg.norm(centers, axis=1, keepdims=True)
     res = model.evaluate_generator(training_generator)
     print('training')
     print(res[0])
