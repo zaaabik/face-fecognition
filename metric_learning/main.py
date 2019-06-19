@@ -67,6 +67,7 @@ def verify(class_count):
     input_target = Input(shape=(class_count,))
     arcface = ArcFace(m_param=m, s_param=s, name='centerlosslayer', max_class=class_count)(
         [resnet.output, input_target])
+    centers = resnet.get_layer('centerlosslayer').get_weights()[0].T
     model = Model(inputs=[resnet.input, input_target], outputs=[arcface])
     optim = optimizers.RMSprop()
     model.compile(optimizer=optim,
@@ -95,11 +96,21 @@ def verify(class_count):
     for test in x_test:
         images.append(get_image(test, 128))
     inference = emb_resnet.predict(images)
+
     for idx, inf1 in enumerate(inference):
         for idx2, inf2 in enumerate(inference):
             is_same = y_train[idx] == y_train[idx2]
             dist = inf1 @ inf2
             print(dist, is_same)
+
+    for idx1, center1 in enumerate(centers):
+        dists = []
+        for idx2, center2 in enumerate(centers):
+            if idx1 != idx2:
+                dist = center2 @ center2
+                dists.append(dist)
+        max_dist = np.max(dists)
+        print(idx1, max_dist)
 
 
 def train_cnn():
