@@ -225,6 +225,7 @@ def InceptionResNetV2(input_shape=None):
 
     x = Dropout(0.2)(x)
     x = Dense(128, use_bias=False)(x)
+    x = BatchNormalization()(x)
 
     model = Model(inputs, x, name='inception_resnet_v2')
 
