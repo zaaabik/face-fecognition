@@ -79,7 +79,7 @@ def verify(class_count):
     x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.07, random_state=42)
     training_generator = Generator(x_train, y_train, batch_size, class_count)
     test_generator = Generator(x_test, y_test, batch_size, class_count)
-    centers = resnet.get_layer('centerlosslayer').get_weights()[0].T
+    centers = model.get_layer('centerlosslayer').get_weights()[0].T
     res = model.evaluate_generator(training_generator)
     print('training')
     print(res[0])
