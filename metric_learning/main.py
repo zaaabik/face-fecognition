@@ -95,6 +95,7 @@ def verify(class_count):
     images = []
     for test in x_test:
         images.append(get_image(test, 128))
+    images = np.array(images)
     inference = emb_resnet.predict(images)
 
     for idx, inf1 in enumerate(inference):
