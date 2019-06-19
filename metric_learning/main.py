@@ -88,9 +88,9 @@ def verify(class_count):
     print(res[0])
     print(res[1])
     emb_resnet = create_resnet()
-    emb_resnet.load_weights(options.weights, by_name=True)
     l2_layer = Lambda(lambda x: l2_normalize(x, 1))(emb_resnet.output)
-    emb_resnet = Model(inputs=[resnet.input], outputs=[l2_layer])
+    emb_resnet = Model(inputs=[emb_resnet.input], outputs=[l2_layer])
+    emb_resnet.load_weights(options.weights, by_name=True)
     images = []
     for test in x_test:
         images.append(get_image(test, 128))
