@@ -87,6 +87,19 @@ def verify(class_count):
     print('test')
     print(res[0])
     print(res[1])
+    emb_resnet = create_resnet()
+    emb_resnet.load_weights(options.weights, by_name=True)
+    l2_layer = Lambda(lambda x: l2_normalize(x, 1))(emb_resnet.output)
+    emb_resnet = Model(inputs=[resnet.input], outputs=[l2_layer])
+    images = []
+    for test in x_test:
+        images.append(get_image(test, 128))
+    inference = emb_resnet.predict(images)
+    for idx, inf1 in enumerate(inference):
+        for idx2, inf2 in enumerate(inference):
+            is_same = y_train[idx] == y_train[idx2]
+            dist = inf1 @ inf2
+            print(dist, is_same)
 
 
 def train_cnn():
