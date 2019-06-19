@@ -67,7 +67,6 @@ def verify(class_count):
     input_target = Input(shape=(class_count,))
     arcface = ArcFace(m_param=m, s_param=s, name='centerlosslayer', max_class=class_count)(
         [resnet.output, input_target])
-    centers = resnet.get_layer('centerlosslayer').get_weights()[0].T
     model = Model(inputs=[resnet.input, input_target], outputs=[arcface])
     optim = optimizers.RMSprop()
     model.compile(optimizer=optim,
@@ -80,6 +79,7 @@ def verify(class_count):
     x_train, x_test, y_train, y_test = train_test_split(data_features, data_labels, test_size=0.07, random_state=42)
     training_generator = Generator(x_train, y_train, batch_size, class_count)
     test_generator = Generator(x_test, y_test, batch_size, class_count)
+    centers = resnet.get_layer('centerlosslayer').get_weights()[0].T
     res = model.evaluate_generator(training_generator)
     print('training')
     print(res[0])
