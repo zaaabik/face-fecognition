@@ -146,7 +146,11 @@ def train_cnn():
 
     filepath = "weights-improvement-{val_loss:.2f}-epch = {epoch:02d}- acc={val_acc:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, mode='max')
-    callbacks = [checkpoint]
+    callbacks = []
+    if save == 'no':
+        pass
+    else:
+        callbacks.append(checkpoint)
 
     if options.weights and os.path.exists(options.weights):
         model.load_weights(options.weights)
@@ -318,6 +322,7 @@ if __name__ == '__main__':
     parser.add_option('--urls', type='string')
     parser.add_option('--thr', type='float')
     parser.add_option('--drop', type='float', default=0.)
+    parser.add_option('--save', type='string', default='yes')
 
     (options, args) = parser.parse_args()
 
@@ -327,6 +332,7 @@ if __name__ == '__main__':
     class_name_max = options.classes
     verbose = options.verbose
     s = options.s
+    save = options.save
     m = options.m
     arch = options.arch
     drop = options.drop
